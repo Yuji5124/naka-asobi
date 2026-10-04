@@ -1,3 +1,4 @@
+import { mazeCardArt, mazeView, bindMaze, MAZE_NAMES } from "./maze.js";
 import {
   shapeCardArt,
   shapeSelection,
@@ -43,6 +44,7 @@ const blank = () => ({
   recent: [],
   stamps: [],
   shapes: [],
+  mazes: [],
   sound: true,
 });
 let data = blank(),
@@ -67,6 +69,9 @@ try {
     data.shapes = ["rotate", "build", "arrange"].filter(
       (m) => Array.isArray(saved.shapes) && saved.shapes.includes(m),
     );
+    data.mazes = Object.keys(MAZE_NAMES).filter(
+      (m) => Array.isArray(saved.mazes) && saved.mazes.includes(m),
+    );
     data.sound = saved.sound !== false;
   }
   localStorage.setItem(KEY, JSON.stringify(data));
@@ -84,6 +89,7 @@ let sessionLetters = new Set(),
 let audioContext;
 let shapeMode = "rotate",
   cleanupShapes = null;
+let cleanupMaze = null;
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -276,6 +282,8 @@ function actions(withNext = true) {
   return `<div class="actions play-actions"><button class="secondary" id="retry">${icon("back")}もういちど</button>${withNext ? `<button class="primary" id="next" hidden>${stage === 3 ? "できた！" : "つぎへ"} ${icon("arrow")}</button>` : ""}</div>`;
 }
 function go(to) {
+  cleanupMaze?.();
+  cleanupMaze = null;
   cleanupShapes?.();
   cleanupShapes = null;
   generation++;
@@ -295,7 +303,7 @@ function go(to) {
   if (to === "home")
     body = `<main class="home"><div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art"><span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ をよむ">あ</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="book-link" data-go="record" aria-label="きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select")
-    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">あそび 5</span><strong>かたち</strong><small>まわして つくろう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">あそび 5</span><strong>かたち</strong><small>まわして つくろう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">あそび 6</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
   if (to === "play")
     body = `<main class="play-screen stage-${stage}">${stageTop()}${[findView, traceView, pathView, writeView][stage]()}</main>`;
   if (to === "result")
@@ -303,7 +311,8 @@ function go(to) {
   if (to === "book")
     body = `<main class="book-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">もじと なかよし</span></div><h1 class="screen-title">あいうえお ずかん</h1><p class="screen-note">あそんだ もじを さわってみよう</p><div class="book-grid">${letters.map((c) => `<button class="book-card ${data.played.includes(c) ? "" : "locked"}" data-letter="${c}" aria-label="${data.played.includes(c) ? c + " " + words[c] : "まだあそんでいないもじ"}">${data.played.includes(c) ? c : "？"}<small>${data.played.includes(c) ? words[c] : "あそんで みつけよう"}</small></button>`).join("")}</div><div id="book-detail">${feedback("どの もじに する？")}</div></main>`;
   if (to === "record")
-    body = `<main class="record-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">あそびの おもいで</span></div><h1 class="screen-title">なかよし きろく</h1><div class="result-art">${friend()}</div><p class="screen-note">さいきん あそんだ もじ</p><div class="collected-row">${data.recent.map((c) => `<span>${c}</span>`).join("") || "これから あそぼう！"}</div><div class="actions">${data.stamps.map((s) => `<span class="sticker">✦<br>${s}</span>`).join("")}</div><p class="screen-note">${data.cleared.length ? data.cleared.map((i) => labels[i]).join("・") + " で あそんだよ" : "すきな あそびを えらんでね"}</p><p class="screen-note">${data.shapes.length ? data.shapes.map((m) => ({ rotate: "まわす", build: "つむ", arrange: "ならべる" })[m]).join("・") + " で あそんだよ" : "かたちも あそんでみよう"}</p>${storageOK ? "" : storageNotice()}<div class="actions"><button class="primary" data-go="select">あそぶ ${icon("arrow")}</button></div></main>`;
+    body = `<main class="record-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">あそびの おもいで</span></div><h1 class="screen-title">なかよし きろく</h1><div class="result-art">${friend()}</div><p class="screen-note">さいきん あそんだ もじ</p><div class="collected-row">${data.recent.map((c) => `<span>${c}</span>`).join("") || "これから あそぼう！"}</div><div class="actions">${data.stamps.map((s) => `<span class="sticker">✦<br>${s}</span>`).join("")}</div><p class="screen-note">${data.cleared.length ? data.cleared.map((i) => labels[i]).join("・") + " で あそんだよ" : "すきな あそびを えらんでね"}</p><p class="screen-note">${data.shapes.length ? data.shapes.map((m) => ({ rotate: "まわす", build: "つむ", arrange: "ならべる" })[m]).join("・") + " で あそんだよ" : "かたちも あそんでみよう"}</p><p class="screen-note">${data.mazes.map((m) => MAZE_NAMES[m] + "の めいろ").join("・")}</p>${storageOK ? "" : storageNotice()}<div class="actions"><button class="primary" data-go="select">あそぶ ${icon("arrow")}</button></div></main>`;
+  if (to === "maze") body = mazeView(feedback);
   if (to === "shapes") body = shapeSelection(friend);
   if (to === "shape-play") body = shapeGameView(shapeMode, feedback);
   app.innerHTML = header() + body;
@@ -329,6 +338,19 @@ function go(to) {
         save();
         tone(true);
         speak("できた！ おなじ かたち！");
+        burst();
+      },
+    });
+  if (to === "maze")
+    cleanupMaze = bindMaze({
+      activate,
+      tone,
+      message: sayFeedback,
+      onSuccess(kind) {
+        if (!data.mazes.includes(kind)) data.mazes.push(kind);
+        save();
+        tone(true);
+        speak("できた！ ゴールに ついたね！");
         burst();
       },
     });

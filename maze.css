@@ -1,0 +1,224 @@
+body[data-screen="maze"] {
+  --accent: #73ab4d;
+  background: radial-gradient(ellipse at 35% 40%, #fffdf2, #edf5dc);
+}
+.maze-category strong {
+  background: linear-gradient(#9bcc60, #65aa44);
+}
+.maze-screen {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+.maze-screen .stage-top {
+  margin: 0;
+}
+.maze-screen .screen-title {
+  font-size: clamp(25px, 3vw, 38px);
+  margin: 12px 0;
+}
+.maze-tabs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.maze-tabs button {
+  min-height: 48px;
+  padding: 8px 22px;
+  font-size: 20px;
+}
+.maze-tabs [aria-pressed="true"] {
+  background: #e3f2c4;
+  border-color: #80b351;
+  box-shadow: 0 0 0 3px #b6d78d;
+}
+.maze-board {
+  border: 3px solid #e0dcb9;
+  border-radius: 28px;
+  background: #fffdf4;
+  overflow: hidden;
+  box-shadow: 0 7px 0 #dddac0;
+}
+.maze-board svg {
+  display: block;
+  width: 100%;
+  max-height: 580px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: crosshair;
+}
+.maze-board svg:focus-visible {
+  outline: 4px solid #28acd1;
+  outline-offset: -5px;
+}
+.maze-board.completed {
+  border-color: #8bb958;
+}
+.maze-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+.maze-actions button {
+  min-height: 56px;
+  font-size: 22px;
+}
+@media (min-width: 900px) and (min-height: 600px) {
+  .select-screen .stage-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    max-width: 1100px;
+    margin: 18px auto;
+  }
+  .select-screen .stage-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-align: center;
+    min-height: 150px;
+    padding: 10px;
+    gap: 8px;
+  }
+  .select-screen .stage-card .activity-art {
+    width: 42%;
+    height: 116px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .select-screen .stage-card > span:not(.arrow) {
+    flex: 1;
+    min-width: 0;
+  }
+  .select-screen .stage-card strong {
+    font-size: 26px;
+    margin: 5px 0;
+  }
+  .select-screen .stage-card small {
+    font-size: 13px;
+  }
+  .select-screen .stage-card .arrow {
+    display: none;
+  }
+  .maze-screen {
+    height: calc(100svh - 100px);
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-rows: 48px 46px minmax(0, 1fr) 64px;
+    gap: 8px 22px;
+    padding: 12px 24px 20px;
+  }
+  .maze-screen .stage-top {
+    grid-column: 1 / -1;
+  }
+  .maze-screen .screen-title {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+    margin: 0;
+    font-size: 30px;
+  }
+  .maze-tabs {
+    grid-column: 2;
+    grid-row: 2;
+    gap: 8px;
+    margin: 0;
+  }
+  .maze-tabs button {
+    font-size: 16px;
+    padding: 4px 6px;
+    white-space: nowrap;
+  }
+  .maze-board {
+    grid-column: 1;
+    grid-row: 3 / 5;
+    min-height: 0;
+  }
+  .maze-board svg {
+    height: 100%;
+    max-height: none;
+  }
+  .maze-screen .feedback {
+    grid-column: 2;
+    grid-row: 3;
+    flex-direction: column;
+    justify-content: center;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+  }
+  .maze-screen .feedback .friend-mini {
+    width: 140px;
+    height: 150px;
+  }
+  .maze-screen .feedback-text {
+    font-size: 24px;
+    text-align: center;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+  .maze-actions {
+    grid-column: 2;
+    grid-row: 4;
+    margin: 0;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    align-self: end;
+  }
+  .maze-actions button {
+    flex: none;
+    font-size: 20px;
+    word-break: keep-all;
+    padding: 8px 12px;
+    min-height: 52px;
+  }
+}
+@media (min-width: 900px) and (min-height: 600px) and (max-height: 700px) {
+  .select-screen .stage-card {
+    min-height: 120px;
+  }
+  .select-screen .stage-card .activity-art {
+    height: 85px;
+  }
+  .select-screen .stage-card strong {
+    font-size: 22px;
+  }
+  .select-screen .select-friend {
+    margin-top: 8px;
+  }
+  .select-screen .stage-grid {
+    gap: 12px;
+    margin: 12px auto;
+  }
+  .maze-screen {
+    grid-template-columns: minmax(0, 1fr) 200px;
+  }
+  .maze-screen .screen-title {
+    font-size: 26px;
+  }
+  .maze-screen .feedback .friend-mini {
+    width: 100px;
+    height: 110px;
+  }
+  .maze-screen .feedback-text {
+    font-size: 21px;
+  }
+}
+@media (max-width: 599px) {
+  .maze-screen {
+    padding: 14px;
+  }
+  .maze-screen .feedback {
+    margin: 16px 0;
+  }
+  .maze-screen .feedback-text {
+    font-size: 19px;
+  }
+  .maze-actions button {
+    font-size: 18px;
+    padding: 10px 14px;
+  }
+}
