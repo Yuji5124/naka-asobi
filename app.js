@@ -1,3 +1,9 @@
+import {
+  shapeCardArt,
+  shapeSelection,
+  shapeGameView,
+  bindShapeGame,
+} from "./shapes.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -36,6 +42,7 @@ const blank = () => ({
   cleared: [],
   recent: [],
   stamps: [],
+  shapes: [],
   sound: true,
 });
 let data = blank(),
@@ -57,6 +64,9 @@ try {
           ["みつけた", "なぞれた", "つながった", "かけた"].includes(s),
         )
       : [];
+    data.shapes = ["rotate", "build", "arrange"].filter(
+      (m) => Array.isArray(saved.shapes) && saved.shapes.includes(m),
+    );
     data.sound = saved.sound !== false;
   }
   localStorage.setItem(KEY, JSON.stringify(data));
@@ -72,6 +82,8 @@ let sessionLetters = new Set(),
   sessionStages = new Set(),
   generation = 0;
 let audioContext;
+let shapeMode = "rotate",
+  cleanupShapes = null;
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -216,7 +228,7 @@ const starts = {
   ほ: [98, 69],
 };
 function header() {
-  return `<header><button class="brand" data-go="home" aria-label="ひらがな あそび ホーム"><span class="brand-mark">あ</span>ひらがな あそび</button><div class="header-tools"><button class="sound" id="sound" aria-pressed="${data.sound}" aria-label="おとを${data.sound ? "けす" : "つける"}">${icon(data.sound ? "sound" : "mute")}<span>おと ${data.sound ? "あり" : "なし"}</span></button><button class="home-button" data-go="home" aria-label="ホームへ">${icon("home")}</button></div></header>`;
+  return `<header><button class="brand" data-go="home" aria-label="ひなあそび ホーム"><span class="brand-mark">あ</span>ひなあそび</button><div class="header-tools"><button class="sound" id="sound" aria-pressed="${data.sound}" aria-label="おとを${data.sound ? "けす" : "つける"}">${icon(data.sound ? "sound" : "mute")}<span>おと ${data.sound ? "あり" : "なし"}</span></button><button class="home-button" data-go="home" aria-label="ホームへ">${icon("home")}</button></div></header>`;
 }
 function stageTop() {
   return `<div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">${icon("back")}</button><div class="steps" aria-label="${stage + 1} / 4">${labels.map((_, i) => `<span class="step-dot ${i === stage ? "active" : ""}"></span>`).join("")}</div><span class="stage-label">${String(stage + 1).padStart(2, "0")} / ${labels[stage]}</span></div>`;
@@ -264,6 +276,8 @@ function actions(withNext = true) {
   return `<div class="actions play-actions"><button class="secondary" id="retry">${icon("back")}もういちど</button>${withNext ? `<button class="primary" id="next" hidden>${stage === 3 ? "できた！" : "つぎへ"} ${icon("arrow")}</button>` : ""}</div>`;
 }
 function go(to) {
+  cleanupShapes?.();
+  cleanupShapes = null;
   generation++;
   screen = to;
   complete = false;
@@ -271,15 +285,17 @@ function go(to) {
   document.querySelector(".drag-ghost")?.remove();
   document.body.classList.toggle(
     "home-scene",
-    screen === "home" || screen === "select",
+    screen === "home" || screen === "select" || screen === "shapes",
   );
   document.body.dataset.screen = screen;
-  document.body.dataset.activity = String(stage);
+  document.body.dataset.activity = screen.startsWith("shape")
+    ? "shape"
+    : String(stage);
   let body = "";
   if (to === "home")
-    body = `<main class="home"><div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>ら</i><i>が</i><i>な</i></span> あそび</h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art"><span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ をよむ">あ</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじを さわって あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="book-link" data-go="record" aria-label="きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
+    body = `<main class="home"><div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art"><span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ をよむ">あ</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="book-link" data-go="record" aria-label="きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select")
-    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}</div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">あそび 5</span><strong>かたち</strong><small>まわして つくろう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
   if (to === "play")
     body = `<main class="play-screen stage-${stage}">${stageTop()}${[findView, traceView, pathView, writeView][stage]()}</main>`;
   if (to === "result")
@@ -287,11 +303,35 @@ function go(to) {
   if (to === "book")
     body = `<main class="book-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">もじと なかよし</span></div><h1 class="screen-title">あいうえお ずかん</h1><p class="screen-note">あそんだ もじを さわってみよう</p><div class="book-grid">${letters.map((c) => `<button class="book-card ${data.played.includes(c) ? "" : "locked"}" data-letter="${c}" aria-label="${data.played.includes(c) ? c + " " + words[c] : "まだあそんでいないもじ"}">${data.played.includes(c) ? c : "？"}<small>${data.played.includes(c) ? words[c] : "あそんで みつけよう"}</small></button>`).join("")}</div><div id="book-detail">${feedback("どの もじに する？")}</div></main>`;
   if (to === "record")
-    body = `<main class="record-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">あそびの おもいで</span></div><h1 class="screen-title">なかよし きろく</h1><div class="result-art">${friend()}</div><p class="screen-note">さいきん あそんだ もじ</p><div class="collected-row">${data.recent.map((c) => `<span>${c}</span>`).join("") || "これから あそぼう！"}</div><div class="actions">${data.stamps.map((s) => `<span class="sticker">✦<br>${s}</span>`).join("")}</div><p class="screen-note">${data.cleared.length ? data.cleared.map((i) => labels[i]).join("・") + " で あそんだよ" : "すきな あそびを えらんでね"}</p>${storageOK ? "" : storageNotice()}<div class="actions"><button class="primary" data-go="select">あそぶ ${icon("arrow")}</button></div></main>`;
+    body = `<main class="record-screen"><div class="stage-top"><button class="back" data-go="home" aria-label="ホームへ">${icon("back")}</button><span class="stage-label">あそびの おもいで</span></div><h1 class="screen-title">なかよし きろく</h1><div class="result-art">${friend()}</div><p class="screen-note">さいきん あそんだ もじ</p><div class="collected-row">${data.recent.map((c) => `<span>${c}</span>`).join("") || "これから あそぼう！"}</div><div class="actions">${data.stamps.map((s) => `<span class="sticker">✦<br>${s}</span>`).join("")}</div><p class="screen-note">${data.cleared.length ? data.cleared.map((i) => labels[i]).join("・") + " で あそんだよ" : "すきな あそびを えらんでね"}</p><p class="screen-note">${data.shapes.length ? data.shapes.map((m) => ({ rotate: "まわす", build: "つむ", arrange: "ならべる" })[m]).join("・") + " で あそんだよ" : "かたちも あそんでみよう"}</p>${storageOK ? "" : storageNotice()}<div class="actions"><button class="primary" data-go="select">あそぶ ${icon("arrow")}</button></div></main>`;
+  if (to === "shapes") body = shapeSelection(friend);
+  if (to === "shape-play") body = shapeGameView(shapeMode, feedback);
   app.innerHTML = header() + body;
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
+  if (to === "shapes")
+    document.querySelectorAll("[data-shape-mode]").forEach((b) =>
+      activate(b, () => {
+        shapeMode = b.dataset.shapeMode;
+        tone();
+        go("shape-play");
+      }),
+    );
+  if (to === "shape-play")
+    cleanupShapes = bindShapeGame({
+      mode: shapeMode,
+      activate,
+      tone,
+      message: sayFeedback,
+      onSuccess(mode) {
+        if (!data.shapes.includes(mode)) data.shapes.push(mode);
+        save();
+        tone(true);
+        speak("できた！ おなじ かたち！");
+        burst();
+      },
+    });
   if (to === "result") {
     tone(true);
     burst();
