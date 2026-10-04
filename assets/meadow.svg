@@ -1,0 +1,213 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 960" fill="none">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1">
+      <stop stop-color="#49c7f0" />
+      <stop offset="1" stop-color="#c5f1fd" />
+    </linearGradient>
+    <linearGradient id="grass" x2="0" y2="1">
+      <stop stop-color="#bfe86d" />
+      <stop offset="1" stop-color="#79c66a" />
+    </linearGradient>
+    <linearGradient id="leaf" x2="0" y2="1">
+      <stop stop-color="#78cb66" />
+      <stop offset="1" stop-color="#279b68" />
+    </linearGradient>
+    <linearGradient id="sun" x2="0" y2="1">
+      <stop stop-color="#ffe973" />
+      <stop offset="1" stop-color="#ffd047" />
+    </linearGradient>
+    <symbol id="tree" viewBox="0 0 110 180">
+      <ellipse cx="55" cy="167" rx="41" ry="9" fill="#458d5b" opacity=".16" />
+      <path
+        d="M55 161V65m0 45-24-18m24 30 20-25"
+        stroke="#ad8251"
+        stroke-width="12"
+        stroke-linecap="round"
+      />
+      <path
+        d="M49 19C29 17 19 36 23 49 3 51-1 80 11 94c-7 30 22 46 41 34 25 18 54 0 48-25 16-14 11-47-11-51 4-23-17-40-40-33Z"
+        fill="url(#leaf)"
+      />
+      <path
+        d="M55 140V73m0 31L32 86m23 29 23-22"
+        stroke="#608f4f"
+        stroke-width="7"
+        stroke-linecap="round"
+      />
+      <ellipse cx="40" cy="45" rx="8" ry="12" fill="#a1dc74" />
+      <ellipse cx="76" cy="70" rx="6" ry="9" fill="#acd978" />
+    </symbol>
+    <symbol id="bush" viewBox="0 0 150 70">
+      <path
+        d="M2 62C-1 36 19 23 39 30 39 1 72-3 86 18c22-12 48 0 44 23 14 0 22 12 18 25Z"
+        fill="#50b978"
+      />
+      <circle cx="49" cy="39" r="5" fill="#9ddc78" />
+      <circle cx="93" cy="33" r="7" fill="#87d16e" />
+    </symbol>
+    <symbol id="flower" viewBox="0 0 46 64">
+      <path
+        d="M23 63V28m0 18q-19-14-18-1t18 8m0-6q19-14 18-1t-18 8"
+        stroke="#489957"
+        stroke-width="5"
+        fill="#70b857"
+        stroke-linecap="round"
+      />
+      <path
+        d="M22 13C8-5-1 14 13 23-7 30 4 49 20 36c8 20 24 6 16-8 21-5 7-24-5-12 1-19-19-19-9-3Z"
+        fill="#fff6d2"
+      />
+      <circle cx="23" cy="26" r="8" fill="#f4bf4f" />
+    </symbol>
+    <symbol id="house" viewBox="0 0 180 170">
+      <ellipse cx="95" cy="160" rx="80" ry="9" fill="#558b45" opacity=".18" />
+      <rect x="31" y="62" width="122" height="93" rx="10" fill="#fff6cd" />
+      <path
+        d="M15 70 88 9q7-6 14 0l69 60"
+        fill="#faac4e"
+        stroke="#f88445"
+        stroke-width="13"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path d="M33 62 96 17l58 48" fill="#ffd975" />
+      <rect x="72" y="101" width="33" height="55" rx="16" fill="#ad865b" />
+      <circle cx="98" cy="132" r="3" fill="#f5d591" />
+      <rect
+        x="48"
+        y="78"
+        width="25"
+        height="27"
+        rx="5"
+        fill="#78d4ed"
+        stroke="#fff"
+        stroke-width="4"
+      />
+      <path d="M61 79v25m-12-12h24" stroke="#fff" stroke-width="3" />
+      <rect
+        x="113"
+        y="78"
+        width="25"
+        height="27"
+        rx="5"
+        fill="#78d4ed"
+        stroke="#fff"
+        stroke-width="4"
+      />
+      <path d="M126 79v25m-12-12h24" stroke="#fff" stroke-width="3" />
+      <rect x="126" y="15" width="15" height="25" rx="3" fill="#ee9152" />
+    </symbol>
+    <symbol id="duck" viewBox="0 0 80 65">
+      <path
+        d="M7 39q15-15 29-2l11-22q8-11 17-4t-1 19l-8 6q-1 22-22 24T7 39"
+        fill="#fffcef"
+      />
+      <path d="m61 19 13 4-13 4" fill="#f3b753" />
+      <circle cx="57" cy="17" r="2.5" fill="#4b7358" />
+      <path d="M21 41q10-5 19 1-5 12-19-1" fill="#f9deb0" />
+    </symbol>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1440v960H0z" />
+  <g fill="#fff" opacity=".94">
+    <path
+      d="M368 134c-20-37 17-67 50-52 2-43 63-52 79-12 25-30 67-11 68 23 30-15 66 10 56 38 36 4 36 43-2 44H369c-39 0-38-41-1-41Z"
+    />
+    <path
+      d="M-42 225c-10-21 6-39 29-37 5-25 47-33 57-3 35-6 45 20 27 35 34 24 6 42-19 42H-40Z"
+    />
+    <path
+      d="M1118 116c-12-31 15-51 37-40 4-35 54-39 63-9 26-20 55 6 44 30 32 1 38 31 16 39h-148Z"
+    />
+    <path
+      d="M1340 262c-17-25 9-47 29-33 15-27 47-19 52 8 25-6 49 20 30 38h-94Z"
+    />
+  </g>
+  <g transform="translate(149 131)">
+    <g stroke="#ffe378" stroke-width="9" stroke-linecap="round">
+      <path
+        d="M0-76v-16M0 76v16M76 0h16M-76 0h-16M54-54l11-11M-54 54l-11 11M54 54l11 11M-54-54l-11-11M28-70l6-15M-28 70l-6 15M70 28l15 6M-70-28l-15-6M70-28l15-6M-70 28l-15 6M28 70l6 15M-28-70l-6-15"
+      />
+    </g>
+    <circle r="58" fill="url(#sun)" />
+    <ellipse cx="-19" cy="8" rx="5" ry="7" fill="#956234" />
+    <ellipse cx="19" cy="8" rx="5" ry="7" fill="#956234" />
+    <path
+      d="M-11 24q11 15 22 0"
+      stroke="#956234"
+      stroke-width="5"
+      stroke-linecap="round"
+    />
+    <circle cx="-34" cy="21" r="9" fill="#ffbd61" />
+    <circle cx="34" cy="21" r="9" fill="#ffbd61" />
+  </g>
+  <path
+    d="M0 509Q218 251 475 480 639 360 815 478 1110 258 1440 496V960H0Z"
+    fill="#82d0c5"
+  />
+  <path
+    d="M0 553Q301 402 574 558 876 385 1132 533 1334 413 1440 500V960H0Z"
+    fill="#8bc974"
+  />
+  <path d="M0 624Q310 448 651 588 974 469 1440 578V960H0Z" fill="url(#grass)" />
+  <path
+    d="M900 593c-176 48-364 99-278 179 86 78 359 28 515 188H858c-42-72-327-88-367-181-41-103 194-145 315-186Z"
+    fill="#f9dfa3"
+  />
+  <path
+    d="M840 610c-152 43-275 99-214 154 82 74 338 55 453 177"
+    stroke="#fef3c5"
+    stroke-width="5"
+    stroke-dasharray="16 16"
+  />
+  <use href="#bush" x="-18" y="491" width="217" height="101" />
+  <use href="#bush" x="235" y="498" width="165" height="77" />
+  <use href="#bush" x="1065" y="483" width="183" height="85" />
+  <use href="#bush" x="1321" y="470" width="210" height="98" />
+  <use href="#house" x="148" y="543" width="210" height="198" />
+  <use href="#house" x="1183" y="465" width="150" height="142" />
+  <g stroke="#fff5d3" stroke-width="9" stroke-linecap="round">
+    <path d="M107 712h45m-35-17v37m24-37v37M333 712h46m-34-17v37m24-37v37" />
+  </g>
+  <ellipse cx="213" cy="837" rx="163" ry="55" fill="#81bf6b" />
+  <ellipse cx="213" cy="828" rx="153" ry="49" fill="#5fcef0" />
+  <path
+    d="M79 823q78-47 184-29"
+    stroke="#a3eaf5"
+    stroke-width="10"
+    stroke-linecap="round"
+  />
+  <path
+    d="M94 851h49m57-22h41m24 18h44"
+    stroke="#d9f9fd"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <use href="#duck" x="121" y="787" width="74" height="62" />
+  <use href="#duck" x="234" y="806" width="48" height="39" />
+  <use href="#tree" x="-25" y="432" width="167" height="273" />
+  <use href="#tree" x="53" y="579" width="125" height="205" />
+  <use href="#tree" x="1251" y="597" width="181" height="295" />
+  <use href="#tree" x="1354" y="435" width="162" height="266" />
+  <use href="#tree" x="337" y="551" width="88" height="144" />
+  <use href="#tree" x="1081" y="515" width="95" height="156" />
+  <use href="#bush" x="-31" y="905" width="282" height="132" />
+  <use href="#bush" x="1246" y="892" width="245" height="115" />
+  <use href="#flower" x="18" y="768" width="35" height="49" />
+  <use href="#flower" x="374" y="808" width="32" height="45" />
+  <use href="#flower" x="53" y="908" width="45" height="63" />
+  <use href="#flower" x="1178" y="841" width="39" height="56" />
+  <use href="#flower" x="1385" y="799" width="33" height="46" />
+  <use href="#flower" x="1010" y="938" width="28" height="40" />
+  <g fill="#f9eb86">
+    <ellipse cx="410" cy="722" rx="5" ry="9" transform="rotate(-22 410 722)" />
+    <ellipse cx="421" cy="728" rx="4" ry="7" transform="rotate(25 421 728)" />
+    <ellipse cx="1211" cy="747" rx="5" ry="9" />
+    <ellipse cx="1222" cy="741" rx="4" ry="7" transform="rotate(25 1222 741)" />
+    <ellipse cx="102" cy="781" rx="4" ry="8" />
+    <ellipse cx="973" cy="861" rx="4" ry="8" />
+    <ellipse cx="982" cy="866" rx="4" ry="7" />
+  </g>
+  <g stroke="#38a9db" stroke-width="6" stroke-linecap="round">
+    <path d="M1080 216q13-16 27 0 9-18 20-7M1200 299q10-13 22 0 8-15 18-7" />
+  </g>
+</svg>

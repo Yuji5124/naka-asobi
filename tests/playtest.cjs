@@ -10,7 +10,9 @@ fs.mkdirSync(artifacts, { recursive: true });
     args: ["--no-sandbox"],
   });
   const context = await browser.newContext({
-    viewport: { width: 390, height: 844 },
+    viewport: JSON.parse(
+      process.env.TEST_VIEWPORT || '{"width":390,"height":844}',
+    ),
     hasTouch: true,
     isMobile: true,
   });
@@ -259,10 +261,18 @@ fs.mkdirSync(artifacts, { recursive: true });
     await page.locator(".book-detail h2").textContent(),
     "あ・あひる",
   );
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll(".stroke-preview path")].every(
+      (p) => parseFloat(getComputedStyle(p).strokeDashoffset) === 0,
+    ),
+  );
   await screenshot("book");
   for (const size of [
     { width: 320, height: 640 },
+    { width: 960, height: 600 },
     { width: 1024, height: 768 },
+    { width: 1180, height: 820 },
+    { width: 768, height: 1024 },
     { width: 1440, height: 900 },
   ]) {
     await page.setViewportSize(size);
@@ -271,10 +281,39 @@ fs.mkdirSync(artifacts, { recursive: true });
     await screenshot(`home-${size.width}`);
     await page.locator("#start").tap();
     await noOverflow();
+    if (size.width >= 900 && size.height >= 600 && size.width > size.height) {
+      assert(
+        await page.evaluate(
+          () => document.documentElement.scrollHeight <= innerHeight,
+        ),
+        "tablet stage selection fits without scrolling",
+      );
+    }
     for (const n of [0, 1, 2, 3]) {
       await page.locator(`[data-stage="${n}"]`).tap();
       await noOverflow();
       await screenshot(`stage-${n}-${size.width}`);
+      if (size.width >= 900 && size.height >= 600 && size.width > size.height) {
+        assert(
+          await page.evaluate(
+            () => document.documentElement.scrollHeight <= innerHeight,
+          ),
+          "tablet play screen must fit without scrolling",
+        );
+        assert(
+          await page.locator("#retry").evaluate((b) => {
+            const r = b.getBoundingClientRect();
+            return r.top >= 0 && r.bottom <= innerHeight;
+          }),
+          "retry stays inside tablet screen",
+        );
+        if ((n === 1 || n === 3) && size.width >= 1000 && size.height >= 740) {
+          assert(
+            (await page.locator("#drawing").boundingBox()).width >= 400,
+            "tablet drawing area must be at least 400 CSS pixels",
+          );
+        }
+      }
       const buttons = await page
         .locator("button:visible")
         .evaluateAll((bs) => bs.map((b) => b.getBoundingClientRect().height));
@@ -328,7 +367,7 @@ fs.mkdirSync(artifacts, { recursive: true });
   assert.deepEqual(errors, [], "browser console errors");
   await browser.close();
   console.log(
-    "PASS: complete play loop, incorrect inputs, 4 traces (touch + mouse), puzzle drag/tap, free writing, collection, reload persistence, sound toggle, 320/390/1024/1440 layouts, touch drag, blocked-storage fallback, and no console errors.",
+    "PASS: complete play loop, incorrect inputs, 4 traces (touch + mouse), puzzle drag/tap, free writing, collection, reload persistence, sound toggle, 320/390/768/960/1024/1180/1440 layouts, tablet screen fit, touch drag, blocked-storage fallback, and no console errors.",
   );
 })().catch((e) => {
   console.error(e);

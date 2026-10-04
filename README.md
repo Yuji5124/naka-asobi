@@ -2,6 +2,12 @@
 
 4〜7歳向けの、指で触って遊ぶひらがなWebアプリ。HTML / CSS / JavaScriptだけで動き、ビルド・ログイン・外部API・有料サービスは不要です。教材タブレットの「触る → 試す → 即反応 → もう一度」という短いループを、オリジナルのUI・SVGイラスト・白い友達キャラクターで実装しています。
 
+## タブレット向けの画面
+
+横向きタブレット（1024×768〜1180×820）を基準にした画面です。ホームは青空・草原・家・池のオリジナルSVG風景、遊びの選択は4枚の大きな絵カード。遊びの画面は左〜中央に操作エリア、右に友達キャラクターと吹き出し、下にやり直し・次へボタンを置き、スクロールなしで操作できます。描画エリアは標準タブレットで400 CSS px以上、描線はクレヨン風です。縦向きタブレット・スマホでは縦配置に切り替わります。
+
+風景とカードは解像度に依存しないSVGで作成しています。外部画像やフォントの読み込みはありません。
+
 ## 起動
 
 ```sh
@@ -30,7 +36,7 @@ Pointer Events対応。タッチ／マウスで同じ操作ができます。パ
 
 ## GitHub Pages
 
-リポジトリの **Settings → Pages → Deploy from a branch** で `main` の `/ (root)` を選択してください。`index.html`、`style.css`、`app.js`、`favicon.svg` が配信されます。すべての参照を相対パスにしているため、`/naka-asobi/` 以下でも動作します。ビルドやルーターのフォールバック設定は不要です。公開操作自体は行っていません。
+リポジトリの **Settings → Pages → Deploy from a branch** で `main` の `/ (root)` を選択してください。`index.html`、`style.css`、`app.js`、`favicon.svg`、`assets/` が配信されます。すべての参照を相対パスにしているため、`/naka-asobi/` 以下でも動作します。ビルドやルーターのフォールバック設定は不要です。GitHubへの反映後、Pagesの配信完了はGitHubのActions / Pages画面で確認してください。
 
 ## ブラウザ検証
 
@@ -41,3 +47,11 @@ node tests/playtest.cjs
 ```
 
 テスト用Playwrightはアプリの実行には不要です。`CHROMIUM_PATH`（既定 `/usr/bin/chromium`）、`TEST_BASE_URL`（既定 `http://127.0.0.1:8000`）、`TEST_ARTIFACT_DIR`（既定 `/tmp/hiragana-playtest`）でテスト環境を切り替えられます。
+
+横向きタブレットを初期画面にして操作を検証する場合：
+
+```sh
+TEST_VIEWPORT='{"width":1024,"height":768}' node tests/playtest.cjs
+```
+
+テストはタブレット横画面のスクロール不要・描画領域の大きさも確認します。実機のSafari/iPadOSやAndroid固有の挙動は、公開URLを端末で開いて確認してください。
