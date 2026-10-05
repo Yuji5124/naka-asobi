@@ -6,6 +6,8 @@
 
 横向きタブレット（1024×768〜1180×820）を基準にした画面です。ホームは青空・草原・家・池のオリジナルSVG風景、遊びの選択は6枚の絵カードを2段に配置。公園・ごほうび・たからものは2ページ目にまとめ、カテゴリ内でステージを選びます。遊びの画面は左〜中央に操作エリア、右に友達キャラクターと吹き出し、下にやり直し・次へボタンを置き、スクロールなしで操作できます。描画エリアは標準タブレットで400 CSS px以上、描線はクレヨン風です。縦向きタブレット・スマホでは縦配置に切り替わります。
 
+タイトルの中央の「あ」は `home-art.js` のSVG線画です。iPadの日本語フォントやボタンの標準余白に依存せず中央に収めます。タイトル名は5文字を同じ幅の枠に並べ、雲の枠・旗・あひる・積み木・ちょうちょを添えています。ホーム専用の調整は `home.css` にまとめています。
+
 風景とカードは解像度に依存しないSVGで作成しています。外部画像やフォントの読み込みはありません。
 
 ## 起動
@@ -52,7 +54,7 @@ Pointer Events対応。タッチ／マウスで同じ操作ができます。パ
 
 ## GitHub Pages
 
-リポジトリの **Settings → Pages → Deploy from a branch** で `main` の `/ (root)` を選択してください。`index.html`、`style.css`、`shapes.css`、`app.js`、`shapes.js`、`maze.js`、`maze.css`、`experiment.js`、`experiment.css`、`extras.js`、`celebrations.js`、`sound.js`、`favicon.svg`、`assets/` が配信されます。すべての参照を相対パスにしているため、`/naka-asobi/` 以下でも動作します。ビルドやルーターのフォールバック設定は不要です。GitHubへの反映後、Pagesの配信完了はGitHubのActions / Pages画面で確認してください。
+リポジトリの **Settings → Pages → Deploy from a branch** で `main` の `/ (root)` を選択してください。`index.html`、`style.css`、`shapes.css`、`app.js`、`shapes.js`、`maze.js`、`maze.css`、`experiment.js`、`experiment.css`、`extras.js`、`celebrations.js`、`sound.js`、`home-art.js`、`home.css`、`favicon.svg`、`assets/` が配信されます。すべての参照を相対パスにしているため、`/naka-asobi/` 以下でも動作します。ビルドやルーターのフォールバック設定は不要です。GitHubへの反映後、Pagesの配信完了はGitHubのActions / Pages画面で確認してください。
 
 ## ブラウザ検証
 
