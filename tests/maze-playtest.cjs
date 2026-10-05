@@ -32,6 +32,7 @@ fs.mkdirSync(dir, { recursive: true });
     await page.locator(".brand").tap();
     await page.locator("#start").tap();
     await page.locator('[data-go="maze"]').tap();
+    await page.locator('[data-play-stage="0"]').tap();
   }
   async function token() {
     return page.locator("#maze-token").evaluate((n) => ({
@@ -128,6 +129,7 @@ fs.mkdirSync(dir, { recursive: true });
   assert.deepEqual(saved.mazes, ["acorn", "butterfly"]);
   assert.deepEqual(saved.played, ["あ"]);
   assert.deepEqual(saved.shapes, ["build"]);
+  await page.locator('[data-go="logs"]').tap();
   await page.locator('[data-go="record"]').tap();
   assert.match(
     await page.locator(".record-screen").textContent(),
@@ -158,6 +160,7 @@ fs.mkdirSync(dir, { recursive: true });
         `select vertical ${JSON.stringify(size)} ${select.h}`,
       );
     await page.locator('[data-go="maze"]').tap();
+    await page.locator('[data-play-stage="0"]').tap();
     const dimensions = await page.evaluate(() => ({
       w: document.documentElement.scrollWidth,
       h: document.documentElement.scrollHeight,

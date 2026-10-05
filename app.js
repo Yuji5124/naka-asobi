@@ -1,3 +1,20 @@
+import {
+  experimentDefaults,
+  readExperiment,
+  createExperiment,
+  parentLogView,
+  gameStats,
+} from "./experiment.js";
+import { sound, setSound } from "./sound.js";
+import { celebrate, clearCelebration } from "./celebrations.js";
+import {
+  extraCardArt,
+  parkView,
+  bindPark,
+  rewardView,
+  collectionView,
+  bindCrane,
+} from "./extras.js";
 import { mazeCardArt, mazeView, bindMaze, MAZE_NAMES } from "./maze.js";
 import {
   shapeCardArt,
@@ -27,9 +44,10 @@ app.addEventListener(
   },
   true,
 );
-const letters = ["あ", "し", "つ", "く", "へ", "ほ"];
+const letters = ["あ", "し", "つ", "く", "へ", "ほ", "の"];
 const labels = ["みつける", "なぞる", "つなぐ", "かく"];
 const words = {
+  の: "のはら",
   あ: "あひる",
   し: "しずく",
   つ: "つき",
@@ -39,6 +57,7 @@ const words = {
 };
 const KEY = "hiragana-asobi-v1";
 const blank = () => ({
+  ...experimentDefaults(),
   played: [],
   cleared: [],
   recent: [],
@@ -72,6 +91,7 @@ try {
     data.mazes = Object.keys(MAZE_NAMES).filter(
       (m) => Array.isArray(saved.mazes) && saved.mazes.includes(m),
     );
+    Object.assign(data, readExperiment(saved));
     data.sound = saved.sound !== false;
   }
   localStorage.setItem(KEY, JSON.stringify(data));
@@ -86,10 +106,37 @@ let screen = "home",
 let sessionLetters = new Set(),
   sessionStages = new Set(),
   generation = 0;
-let audioContext;
 let shapeMode = "rotate",
-  cleanupShapes = null;
-let cleanupMaze = null;
+  cleanupShapes = null,
+  cleanupMaze = null,
+  cleanupExtra = null;
+let variant = 0,
+  stageTarget = "find",
+  shapeVariant = 0,
+  mazeKind = "acorn",
+  parkVariant = 0,
+  categoryPage = 0;
+const gameIds = ["find", "trace", "path", "write"];
+const experiment = createExperiment(data, save, updateHUD);
+setSound(data.sound);
+function updateHUD() {
+  const coins = document.querySelector("#coin-count");
+  if (coins) coins.textContent = `🪙 × ${data.coinBalance}`;
+  const points = document.querySelector("#point-count");
+  if (points) points.textContent = `⭐ ${data.totalPoints % 5} / 5`;
+}
+function award() {
+  const oldBalance = data.coinBalance;
+  const result = experiment.complete();
+  if (!result) return;
+  updateHUD();
+  if (result.coin)
+    document.querySelector("#coin-count").textContent = `🪙 × ${oldBalance}`;
+  celebrate(result, tone, updateHUD);
+}
+function beginLegacy(reason = "start") {
+  experiment.start(gameIds[stage], `${gameIds[stage]}-0${variant + 1}`, reason);
+}
 function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -108,43 +155,7 @@ function collect(c, n) {
   save();
 }
 function tone(success = false) {
-  if (!data.sound) return;
-  try {
-    audioContext ||= new (window.AudioContext || window.webkitAudioContext)();
-    audioContext.resume().catch(() => {});
-    const now = audioContext.currentTime;
-    (success ? [523, 659, 784] : [440]).forEach((f, i) => {
-      const o = audioContext.createOscillator(),
-        g = audioContext.createGain();
-      o.type = "sine";
-      o.frequency.value = f;
-      g.gain.setValueAtTime(0, now + i * 0.1);
-      g.gain.linearRampToValueAtTime(0.08, now + i * 0.1 + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.19);
-      o.connect(g);
-      g.connect(audioContext.destination);
-      o.start(now + i * 0.1);
-      o.stop(now + i * 0.1 + 0.2);
-    });
-  } catch {
-    /* A silent browser can still play every activity. */
-  }
-}
-function speak(text) {
-  if (!data.sound || !("speechSynthesis" in window)) return;
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "ja-JP";
-    u.rate = 0.8;
-    const voice = speechSynthesis
-      .getVoices()
-      .find((v) => v.lang.startsWith("ja"));
-    if (voice) u.voice = voice;
-    speechSynthesis.speak(u);
-  } catch {
-    /* Japanese voices depend on the device. */
-  }
+  sound(success);
 }
 const svg = (content, cls = "", viewBox = "0 0 100 100") =>
   `<svg class="${cls}" viewBox="${viewBox}" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">${content}</svg>`;
@@ -172,6 +183,7 @@ function friend(mood = "") {
 }
 function picture(c) {
   const content = {
+    の: '<path d="M0 70Q25 25 50 70T100 70V100H0Z" fill="#a3cf76"/><circle cx="72" cy="23" r="15" fill="#f6da7a"/><path d="M30 87V60m-8 0h16" stroke="#7ea258" stroke-width="5"/><circle cx="30" cy="57" r="12" fill="#e9a4c1"/>',
     あ: '<path d="M15 64q15-18 38-9l10-25q13-16 25-1t-2 24l-13 9q-1 25-32 26T15 64" fill="#f9d96f"/><path d="M83 38l15 6-15 6" fill="#ed9c58"/><circle cx="78" cy="35" r="3" fill="#4f6559"/><path d="M31 66q10-6 24 0-7 12-24 0" fill="#eabe52"/><path d="M12 89q12 7 23 0t25 0 25 0" fill="none" stroke="#9dcfd9" stroke-width="5" stroke-linecap="round"/>',
     し: '<path d="M51 8Q42 35 23 58q-14 33 20 37 44 7 37-27Q65 38 51 8" fill="#a9dce6"/><path d="M35 64q-8 15 5 20" fill="none" stroke="white" stroke-width="6" stroke-linecap="round"/><circle cx="47" cy="60" r="3" fill="#3e665f"/><circle cx="65" cy="60" r="3" fill="#3e665f"/><path d="M52 71q5 5 10 0" fill="none" stroke="#3e665f" stroke-width="2.5"/>',
     つ: '<path d="M68 8Q32 23 44 57q10 28 39 26-34 28-58-2T28 18q18-15 40-10" fill="#f4d477"/><circle cx="29" cy="48" r="3" fill="#82723e"/><path d="M19 58q6 5 12 0" stroke="#82723e" stroke-width="2" fill="none"/><path d="M82 20l4 8 9 2-7 6 1 9-7-5-8 5 2-10-7-5 10-2z" fill="#f4d477"/>',
@@ -194,6 +206,9 @@ function stageArt(n) {
   return svg(paper + art[n], "activity-art", "0 0 260 180");
 }
 const paths = {
+  の: [
+    "M200 115C170 145 115 236 91 248C42 274 67 145 145 102C240 40 333 116 318 217C312 270 257 305 192 307",
+  ],
   し: ["M145 75 C143 130 130 218 145 277 C160 340 230 333 285 286"],
   つ: ["M75 130 C154 102 301 91 311 173 C321 235 220 268 155 280"],
   く: ["M265 65 Q207 127 133 191 Q194 242 267 325"],
@@ -226,6 +241,7 @@ function guide(c, preview = false) {
   );
 }
 const starts = {
+  の: [200, 115],
   し: [145, 75],
   つ: [75, 130],
   く: [265, 65],
@@ -234,10 +250,10 @@ const starts = {
   ほ: [98, 69],
 };
 function header() {
-  return `<header><button class="brand" data-go="home" aria-label="ひなあそび ホーム"><span class="brand-mark">あ</span>ひなあそび</button><div class="header-tools"><button class="sound" id="sound" aria-pressed="${data.sound}" aria-label="おとを${data.sound ? "けす" : "つける"}">${icon(data.sound ? "sound" : "mute")}<span>おと ${data.sound ? "あり" : "なし"}</span></button><button class="home-button" data-go="home" aria-label="ホームへ">${icon("home")}</button></div></header>`;
+  return `<header><button class="brand" data-go="home" aria-label="ひなあそび ホーム"><span class="brand-mark">あ</span>ひなあそび</button><div class="header-tools"><button class="coin-hud" data-go="reward" aria-label="ごほうびとコイン"><strong id="coin-count">🪙 × ${data.coinBalance}</strong><small id="point-count">⭐ ${data.totalPoints % 5} / 5</small></button><button class="sound" id="sound" aria-pressed="${data.sound}" aria-label="おとを${data.sound ? "けす" : "つける"}">${icon(data.sound ? "sound" : "mute")}<span>おと ${data.sound ? "あり" : "なし"}</span></button><button class="home-button" data-go="home" aria-label="ホームへ">${icon("home")}</button></div></header>`;
 }
 function stageTop() {
-  return `<div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">${icon("back")}</button><div class="steps" aria-label="${stage + 1} / 4">${labels.map((_, i) => `<span class="step-dot ${i === stage ? "active" : ""}"></span>`).join("")}</div><span class="stage-label">${String(stage + 1).padStart(2, "0")} / ${labels[stage]}</span></div>`;
+  return `<div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">${icon("back")}</button><div class="steps" aria-label="${stage + 1} / 4">${labels.map((_, i) => `<span class="step-dot ${i === stage ? "active" : ""}"></span>`).join("")}</div><span class="stage-label">${labels[stage]} ${variant + 1}</span></div>`;
 }
 function feedback(text) {
   return `<div class="feedback"><div class="friend-mini">${friend()}</div><p class="feedback-text" id="message" role="status" aria-live="polite">${text}</p></div>`;
@@ -273,15 +289,49 @@ function win(c, text) {
   document.querySelector(".play-screen")?.classList.add("completed");
   collect(c, stage);
   tone(true);
-  speak(text);
+
   sayFeedback(text, "happy");
-  burst();
+  award();
   document.querySelector("#next")?.removeAttribute("hidden");
 }
 function actions(withNext = true) {
   return `<div class="actions play-actions"><button class="secondary" id="retry">${icon("back")}もういちど</button>${withNext ? `<button class="primary" id="next" hidden>${stage === 3 ? "できた！" : "つぎへ"} ${icon("arrow")}</button>` : ""}</div>`;
 }
-function go(to) {
+function stageMenuView() {
+  const name = {
+    find: "みつける",
+    trace: "なぞる",
+    path: "つなぐ",
+    write: "かく",
+    shape: "かたち",
+    maze: "めいろ",
+    find2: "こうえん",
+  }[stageTarget];
+  const notes = {
+    find: ["あ を さがそう", "こうえんの コイン"],
+    trace: ["すーっと なぞろう", "のはらの の"],
+    path: ["みぎから つなごう", "したから つなごう"],
+    write: ["ほ を かこう", "やまみたいな へ"],
+    shape: ["つみき・ロケット", "はし・ふね"],
+    maze: Object.values(MAZE_NAMES),
+    find2: ["おひさまの こうえん", "はなの こうえん"],
+  }[stageTarget];
+  return `<main class="stage-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">${name}</span></div><h1 class="screen-title">どれで あそぶ？</h1><div class="stage-choice-grid">${notes.map((note, i) => `<button class="stage-card" data-play-stage="${i}">${stageTarget === "shape" ? shapeCardArt() : stageTarget === "maze" ? mazeCardArt() : stageTarget === "find2" || (stageTarget === "find" && i === 1) ? extraCardArt("park") : stageArt(gameIds.indexOf(stageTarget))}<span><strong>${name} ${i + 1}</strong><small>${note}</small></span></button>`).join("")}</div></main>`;
+}
+function go(to, reason = "start") {
+  clearCelebration();
+  if (
+    reason === "retry" &&
+    experiment.active?.completed &&
+    experiment.active.effect
+  ) {
+    data.effects[experiment.active.effect].retries++;
+    experiment.active.retriedAfterEffect = true;
+    save();
+  }
+  experiment.finish();
+  cleanupExtra?.();
+  cleanupExtra = null;
   cleanupMaze?.();
   cleanupMaze = null;
   cleanupShapes?.();
@@ -289,11 +339,14 @@ function go(to) {
   generation++;
   screen = to;
   complete = false;
-  if ("speechSynthesis" in window) speechSynthesis.cancel();
+
   document.querySelector(".drag-ghost")?.remove();
   document.body.classList.toggle(
     "home-scene",
-    screen === "home" || screen === "select" || screen === "shapes",
+    screen === "home" ||
+      screen === "select" ||
+      screen === "shapes" ||
+      screen === "stage-menu",
   );
   document.body.dataset.screen = screen;
   document.body.dataset.activity = screen.startsWith("shape")
@@ -301,9 +354,23 @@ function go(to) {
     : String(stage);
   let body = "";
   if (to === "home")
-    body = `<main class="home"><div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art"><span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ をよむ">あ</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="book-link" data-go="record" aria-label="きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
+    body = `<main class="home"><div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art"><span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ であそぶ">あ</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="parent-link" data-go="logs" aria-label="保護者用きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select")
-    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">あそび 5</span><strong>かたち</strong><small>まわして つくろう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">あそび 6</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">あそび 5</span><strong>かたち</strong><small>まわして つくろう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">あそび 6</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！<button class="secondary" data-category-page="1">こうえん・ごほうび ›</button></div></main>`;
+  if (to === "select" && categoryPage === 1)
+    body = `<main class="select-screen"><h1 class="screen-title">さがす？ ごほうび？</h1><p class="screen-note">すきな あそびを えらんでね</p><div class="stage-grid extra-category-grid"><button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><strong>こうえん</strong><small>コインを みつけよう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><strong>ごほうび</strong><small>たからもの クレーン</small></span></button><button class="stage-card" data-go="collection">${extraCardArt("crane")}<span><strong>たからもの</strong><small>あつめた もの</small></span></button></div><div class="select-friend"><button class="secondary" data-category-page="0">‹ もじ・かたち・めいろ</button></div></main>`;
+  if (to === "stage-menu") body = stageMenuView();
+  if (to === "park-menu") {
+    stageTarget = "find2";
+    body = stageMenuView();
+  }
+  if (to === "park") body = parkView(feedback, parkVariant);
+  if (to === "reward") body = rewardView(data);
+  if (to === "collection") body = collectionView(data);
+  if (to === "logs") {
+    experiment.checkpoint();
+    body = parentLogView(data);
+  }
   if (to === "play")
     body = `<main class="play-screen stage-${stage}">${stageTop()}${[findView, traceView, pathView, writeView][stage]()}</main>`;
   if (to === "result")
@@ -316,6 +383,7 @@ function go(to) {
   if (to === "shapes") body = shapeSelection(friend);
   if (to === "shape-play") body = shapeGameView(shapeMode, feedback);
   app.innerHTML = header() + body;
+  if (to === "play") beginLegacy(reason);
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -333,12 +401,18 @@ function go(to) {
       activate,
       tone,
       message: sayFeedback,
+      startRound: shapeVariant === 1 ? 3 : 0,
+      onStage(round, reason) {
+        clearCelebration();
+        updateHUD();
+        experiment.start("shape", `shape-${shapeMode}-0${round + 1}`, reason);
+      },
       onSuccess(mode) {
         if (!data.shapes.includes(mode)) data.shapes.push(mode);
         save();
         tone(true);
-        speak("できた！ おなじ かたち！");
-        burst();
+
+        award();
       },
     });
   if (to === "maze")
@@ -346,14 +420,73 @@ function go(to) {
       activate,
       tone,
       message: sayFeedback,
+      initialKind: mazeKind,
+      onStage(kind, reason) {
+        clearCelebration();
+        updateHUD();
+        mazeKind = kind;
+        experiment.start("maze", `maze-${kind}`, reason);
+      },
       onSuccess(kind) {
         if (!data.mazes.includes(kind)) data.mazes.push(kind);
         save();
         tone(true);
-        speak("できた！ ゴールに ついたね！");
-        burst();
+
+        award();
       },
     });
+  if (to === "park") {
+    experiment.start("find2", `find2-0${parkVariant + 1}`, reason);
+    bindPark({
+      variant: parkVariant,
+      activate,
+      tone,
+      message: sayFeedback,
+      onSuccess: award,
+      onRetry() {
+        go("park", "retry");
+      },
+      onNext() {
+        parkVariant = 1 - parkVariant;
+        go("park");
+      },
+    });
+  }
+  if (to === "reward")
+    cleanupExtra = bindCrane({
+      data,
+      experiment,
+      activate,
+      tone,
+      refresh: updateHUD,
+    });
+  if (to === "logs")
+    document.querySelector("#export-log").onclick = () => {
+      experiment.checkpoint();
+      const a = document.createElement("a"),
+        url = URL.createObjectURL(
+          new Blob(
+            [
+              JSON.stringify(
+                {
+                  ...data,
+                  exportedAt: new Date().toISOString(),
+                  gameSummary: gameStats(data),
+                },
+                null,
+                2,
+              ),
+            ],
+            {
+              type: "application/json",
+            },
+          ),
+        );
+      a.href = url;
+      a.download = `hina-asobi-log-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
   if (to === "result") {
     tone(true);
     burst();
@@ -368,7 +501,10 @@ function storageNotice() {
 function activate(button, action) {
   if (!button) return;
   let handled = false;
-  button.addEventListener("pointerdown", () => {
+  button.addEventListener("pointerdown", (e) => {
+    // Suppress synthetic mousedown on controls revealed at the same location.
+    // A delayed touch mouse event can otherwise move a newly revealed slider.
+    if (e.button === 0) e.preventDefault();
     handled = false;
   });
   button.addEventListener("pointerup", (e) => {
@@ -383,69 +519,96 @@ function activate(button, action) {
   });
 }
 function bindCommon() {
-  document.querySelectorAll("[data-go]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        tone();
-        go(b.dataset.go);
-      }),
+  document.querySelectorAll("[data-go]").forEach((b) =>
+    activate(b, () => {
+      tone();
+      if (screen === "select" && ["shapes", "maze"].includes(b.dataset.go)) {
+        stageTarget = b.dataset.go === "shapes" ? "shape" : "maze";
+        go("stage-menu");
+      } else go(b.dataset.go);
+    }),
   );
-  document.querySelector("#sound").onclick = () => {
+  activate(document.querySelector("#sound"), () => {
     data.sound = !data.sound;
     save();
-    if (!data.sound) window.speechSynthesis?.cancel();
-    else {
-      tone();
-      speak("おとを つけたよ");
-    }
+    setSound(data.sound);
+    if (data.sound) tone();
     const b = document.querySelector("#sound");
     b.innerHTML =
       icon(data.sound ? "sound" : "mute") +
       `<span>おと ${data.sound ? "あり" : "なし"}</span>`;
     b.setAttribute("aria-pressed", String(data.sound));
     b.setAttribute("aria-label", `おとを${data.sound ? "けす" : "つける"}`);
-  };
-  document.querySelector("#start")?.addEventListener("click", () => {
+  });
+  activate(document.querySelector("#start"), () => {
     sessionLetters = new Set();
     sessionStages = new Set();
+    categoryPage = 0;
     pathRound = 0;
     traceLetter = "し";
     tone();
-    speak("いっしょに あそぼう");
+
     go("select");
   });
-  document.querySelector("#hero-letter")?.addEventListener("click", () => {
+  activate(document.querySelector("#hero-letter"), () => {
     tone();
-    speak("あ");
+
     document.querySelector(".hero-friend .friend").classList.remove("happy");
     void app.offsetWidth;
     document.querySelector(".hero-friend .friend").classList.add("happy");
   });
-  document.querySelectorAll("[data-stage]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        stage = Number(b.dataset.stage);
-        tone();
+  document.querySelectorAll("[data-stage]").forEach((b) =>
+    activate(b, () => {
+      stage = Number(b.dataset.stage);
+      stageTarget = gameIds[stage];
+      tone();
+      go("stage-menu");
+    }),
+  );
+  document.querySelectorAll("[data-category-page]").forEach((b) =>
+    activate(b, () => {
+      categoryPage = Number(b.dataset.categoryPage);
+      tone();
+      go("select");
+    }),
+  );
+  document.querySelectorAll("[data-play-stage]").forEach((b) =>
+    activate(b, () => {
+      const n = Number(b.dataset.playStage);
+      tone();
+      if (stageTarget === "find" && n === 1) {
+        parkVariant = 0;
+        go("park");
+      } else if (stageTarget === "find2") {
+        parkVariant = n;
+        go("park");
+      } else if (stageTarget === "shape") {
+        shapeVariant = n;
+        go("shapes");
+      } else if (stageTarget === "maze") {
+        mazeKind = Object.keys(MAZE_NAMES)[n];
+        go("maze");
+      } else {
+        variant = n;
+        stage = gameIds.indexOf(stageTarget);
+        traceLetter = n ? "の" : "し";
+        pathRound = n ? 1 : 0;
         go("play");
-        speak(
-          [
-            "あ を みつけよう",
-            "し を なぞろう",
-            "あひるまで みちを つくろう",
-            "ほ を かいてみよう",
-          ][stage],
-        );
-      }),
+      }
+    }),
   );
   activate(document.querySelector("#retry"), () => {
     tone();
-    go("play");
+    go("play", "retry");
   });
   activate(document.querySelector("#next"), () => {
     if (!complete) return;
     tone();
     if (stage < 3) {
       stage++;
+      variant = 0;
+      traceLetter = "し";
+      pathRound = 0;
       go("play");
     } else go("result");
   });
@@ -463,38 +626,37 @@ function bindFind() {
     .map((c) => `<button class="letter-card" aria-label="${c}">${c}</button>`)
     .join("");
   let found = 0;
-  document.querySelectorAll(".letter-card").forEach(
-    (b) =>
-      (b.onclick = () => {
-        if (complete || b.classList.contains("found")) {
-          tone();
-          speak(b.textContent);
-          return;
-        }
-        if (b.textContent === "あ") {
-          b.classList.add("found");
-          b.setAttribute("aria-label", "あ みつけた");
-          found++;
-          document
-            .querySelectorAll(".find-progress span")
-            [found - 1].classList.add("done");
-          tone();
-          speak("あ");
-          sayFeedback("みつけた！", "happy");
-          if (found === 3) win("あ", "ぜんぶ みつけた！");
-        } else {
-          b.classList.remove("wiggle");
-          void b.offsetWidth;
-          b.classList.add("wiggle");
-          tone();
-          speak(b.textContent);
-          sayFeedback("もういちど！");
-        }
-      }),
+  document.querySelectorAll(".letter-card").forEach((b) =>
+    activate(b, () => {
+      if (complete || b.classList.contains("found")) {
+        tone();
+
+        return;
+      }
+      if (b.textContent === "あ") {
+        b.classList.add("found");
+        b.setAttribute("aria-label", "あ みつけた");
+        found++;
+        document
+          .querySelectorAll(".find-progress span")
+          [found - 1].classList.add("done");
+        tone();
+
+        sayFeedback("みつけた！", "happy");
+        if (found === 3) win("あ", "ぜんぶ みつけた！");
+      } else {
+        b.classList.remove("wiggle");
+        void b.offsetWidth;
+        b.classList.add("wiggle");
+        tone();
+
+        sayFeedback("もういちど！");
+      }
+    }),
   );
 }
 function traceView() {
-  return `<div class="instruction"><h1 class="task-title">「${traceLetter}」を なぞろう</h1></div><div class="drawing-layout"><div class="draw-board" id="draw-board">${guide(traceLetter)}<canvas id="drawing" aria-label="${traceLetter}をなぞる。1から線にそって指で動かしてね"></canvas></div><div class="letter-tabs" aria-label="なぞるもじ">${["し", "つ", "く", "へ"].map((c) => `<button data-trace="${c}" class="${c === traceLetter ? "selected" : ""}" aria-pressed="${c === traceLetter}">${c}</button>`).join("")}</div></div>${feedback("①から すーっと！")}${actions()}`;
+  return `<div class="instruction"><h1 class="task-title">「${traceLetter}」を なぞろう</h1></div><div class="drawing-layout"><div class="draw-board" id="draw-board">${guide(traceLetter)}<canvas id="drawing" aria-label="${traceLetter}をなぞる。1から線にそって指で動かしてね"></canvas></div><div class="letter-tabs" aria-label="なぞるもじ">${(variant ? ["の", "し", "つ", "く", "へ"] : ["し", "つ", "く", "へ"]).map((c) => `<button data-trace="${c}" class="${c === traceLetter ? "selected" : ""}" aria-pressed="${c === traceLetter}">${c}</button>`).join("")}</div></div>${feedback("①から すーっと！")}${actions()}`;
 }
 function setupDrawing(callbacks) {
   const canvas = document.querySelector("#drawing"),
@@ -569,7 +731,6 @@ function bindTrace() {
       traceLetter = b.dataset.trace;
       tone();
       go("play");
-      speak(traceLetter);
     }),
   );
   const path = document.querySelector(".trace-guide"),
@@ -639,6 +800,7 @@ const roadTypes = {
   V: "M50 0V100",
   LD: "M0 50H50V100",
   T: "M0 50H100M50 50V100",
+  UR: "M50 0V50H100",
 };
 function road(type) {
   return svg(
@@ -648,13 +810,15 @@ function road(type) {
 const goals = ["あ", "く", "ほ", "し", "つ", "へ"];
 function pathView() {
   const c = goals[pathRound % goals.length];
-  return `<div class="instruction"><h1 class="task-title">${words[c]}まで つなごう</h1></div><div class="path-layout"><div class="puzzle-grid" id="puzzle-grid">${Array.from({ length: 9 }, (_, i) => (i === 0 ? `<div class="path-cell">${road("H")}<span class="token">${c}</span></div>` : i === 8 ? `<div class="path-cell destination">${picture(c)}</div>` : [1, 2, 5].includes(i) ? `<button class="path-cell empty" data-slot="${i}" aria-label="みちをおく ${i === 1 ? "よこ" : i === 2 ? "まがり" : "たて"}"></button>` : `<div class="path-cell decoration">${svg(i === 3 ? '<path d="M47 93V52" stroke="#a17b4a" stroke-width="10" stroke-linecap="round"/><path d="M47 15C25 5 15 29 25 40 9 48 17 71 41 65c24 13 47-8 33-25 8-22-7-36-27-25Z" fill="#5eae65"/><circle cx="38" cy="32" r="7" fill="#a0d76b"/>' : i === 6 ? '<ellipse cx="51" cy="52" rx="39" ry="25" fill="#6ed1ee"/><path d="M27 47q20-13 41 0m-28 16h20" fill="none" stroke="#c5f7f9" stroke-width="5" stroke-linecap="round"/>' : '<path d="M30 70l5-16m10 19 7-18m10 18 5-16" stroke="#98c272" stroke-width="4" stroke-linecap="round"/>')}</div>`)).join("")}</div><div class="path-palette"><small>みちの パーツ</small>${["H", "LD", "V", "T"].map((t, i) => `<button data-piece="${t}" aria-label="${["よこみち", "まがりみち", "たてみち", "わかれみち"][i]}">${road(t)}</button>`).join("")}</div></div>${feedback("みちを はこんでね")}${actions()}<div class="extra-actions"><button class="secondary" id="another-path">ちがう もじ</button></div>`;
+  return `<div class="instruction"><h1 class="task-title">${words[c]}まで つなごう</h1></div><div class="path-layout"><div class="puzzle-grid" id="puzzle-grid">${Array.from({ length: 9 }, (_, i) => (i === 0 ? `<div class="path-cell">${road(variant ? "V" : "H")}<span class="token">${c}</span></div>` : i === 8 ? `<div class="path-cell destination">${picture(c)}</div>` : (variant ? [3, 6, 7] : [1, 2, 5]).includes(i) ? `<button class="path-cell empty" data-slot="${i}" aria-label="みちをおく ${i === 1 ? "よこ" : i === 2 ? "まがり" : "たて"}"></button>` : `<div class="path-cell decoration">${svg(i === 3 ? '<path d="M47 93V52" stroke="#a17b4a" stroke-width="10" stroke-linecap="round"/><path d="M47 15C25 5 15 29 25 40 9 48 17 71 41 65c24 13 47-8 33-25 8-22-7-36-27-25Z" fill="#5eae65"/><circle cx="38" cy="32" r="7" fill="#a0d76b"/>' : i === 6 ? '<ellipse cx="51" cy="52" rx="39" ry="25" fill="#6ed1ee"/><path d="M27 47q20-13 41 0m-28 16h20" fill="none" stroke="#c5f7f9" stroke-width="5" stroke-linecap="round"/>' : '<path d="M30 70l5-16m10 19 7-18m10 18 5-16" stroke="#98c272" stroke-width="4" stroke-linecap="round"/>')}</div>`)).join("")}</div><div class="path-palette"><small>みちの パーツ</small>${(variant ? ["V", "UR", "H", "T"] : ["H", "LD", "V", "T"]).map((t, i) => `<button data-piece="${t}" aria-label="${["よこみち", "まがりみち", "たてみち", "わかれみち"][i]}">${road(t)}</button>`).join("")}</div></div>${feedback("みちを はこんでね")}${actions()}<div class="extra-actions"><button class="secondary" id="another-path">ちがう もじ</button></div>`;
 }
 function bindPath() {
   let selected = null,
     done = new Set(),
     drag = null;
-  const expected = { 1: "H", 2: "LD", 5: "V" },
+  const expected = variant
+      ? { 3: "V", 6: "UR", 7: "H" }
+      : { 1: "H", 2: "LD", 5: "V" },
     thisGeneration = generation;
   function select(type) {
     selected = type;
@@ -680,12 +844,19 @@ function bindPath() {
         document.querySelector("#puzzle-grid").append(token);
         document.querySelector(".token").style.visibility = "hidden";
         let i = 0;
-        const points = [
-          [39, 9],
-          [70, 9],
-          [70, 39],
-          [70, 70],
-        ];
+        const points = variant
+          ? [
+              [9, 39],
+              [9, 70],
+              [39, 70],
+              [70, 70],
+            ]
+          : [
+              [39, 9],
+              [70, 9],
+              [70, 39],
+              [70, 70],
+            ];
         const travel = () => {
           if (generation !== thisGeneration) return;
           if (i < points.length) {
@@ -803,7 +974,7 @@ function bindPath() {
   };
 }
 function writeView() {
-  return `<div class="instruction"><h1 class="task-title">「ほ」を かいてみよう</h1></div><div class="drawing-layout"><div class="write-sample"><small>おてほん</small><button class="sample-char" id="sample" aria-label="ほ をよむ">ほ</button></div><div class="draw-board" id="draw-board"><canvas id="drawing" aria-label="ほを自由にかくキャンバス"></canvas><div class="ink-creature" aria-hidden="true"></div></div></div>${feedback("ゆびで かいてみよう！")}${actions()}<div class="extra-actions"><button class="primary" id="finish-writing">かけた！ ${icon("arrow")}</button></div>`;
+  return `<div class="instruction"><h1 class="task-title">「${variant ? "へ" : "ほ"}」を かいてみよう</h1></div><div class="drawing-layout"><div class="write-sample"><small>おてほん</small><button class="sample-char" id="sample" aria-label="おてほん">${variant ? "へ" : "ほ"}</button></div><div class="draw-board" id="draw-board"><canvas id="drawing" aria-label="${variant ? "へ" : "ほ"}を自由にかくキャンバス"></canvas><div class="ink-creature" aria-hidden="true"></div></div></div>${feedback("ゆびで かいてみよう！")}${actions()}<div class="extra-actions"><button class="primary" id="finish-writing">かけた！ ${icon("arrow")}</button></div>`;
 }
 function bindWrite() {
   let strokes = 0,
@@ -813,8 +984,8 @@ function bindWrite() {
     cancelled = false;
   document.querySelector("#sample").onclick = () => {
     tone();
-    speak("ほ");
-    sayFeedback("ほ、かいてみよう！", "happy");
+
+    sayFeedback(variant ? "やまみたいな へ！" : "ほ、かいてみよう！", "happy");
   };
   setupDrawing({
     start(p) {
@@ -850,20 +1021,20 @@ function bindWrite() {
         .map((p) => `${Math.floor(p.x / 100)},${Math.floor(p.y / 100)}`),
     );
     const leftStart = beginnings.some(
-      (p) => p.x < 180 && p.y < 230 && p.y > 15,
+      (p) => p.x < 180 && p.y < (variant ? 280 : 230) && p.y > 15,
     );
     if (
       !cancelled &&
-      strokes >= 3 &&
-      totalLength >= 450 &&
-      width >= 135 &&
-      height >= 170 &&
-      cells.size >= 5 &&
+      strokes >= (variant ? 1 : 3) &&
+      totalLength >= (variant ? 230 : 450) &&
+      width >= (variant ? 180 : 135) &&
+      height >= (variant ? 100 : 170) &&
+      cells.size >= (variant ? 3 : 5) &&
       leftStart
     ) {
       document.querySelector("#draw-board").classList.add("success", "alive");
       document.querySelector("#finish-writing").hidden = true;
-      win("ほ", "わあ！ もじが うごいた！");
+      win(variant ? "へ" : "ほ", "わあ！ もじが うごいた！");
     } else {
       tone();
       sayFeedback("もうすこし おおきく かいてみよう");
@@ -871,29 +1042,27 @@ function bindWrite() {
   });
 }
 function bindBook() {
-  document.querySelectorAll("[data-letter]").forEach(
-    (b) =>
-      (b.onclick = () => {
-        const c = b.dataset.letter;
-        if (!data.played.includes(c)) {
-          tone();
-          sayFeedback("あそぶと もじが ひらくよ");
-          b.classList.remove("wiggle");
-          void b.offsetWidth;
-          b.classList.add("wiggle");
-          return;
-        }
+  document.querySelectorAll("[data-letter]").forEach((b) =>
+    activate(b, () => {
+      const c = b.dataset.letter;
+      if (!data.played.includes(c)) {
         tone();
-        speak(`${c}、${words[c]}`);
-        document.querySelector("#book-detail").innerHTML =
-          `<div class="book-detail">${picture(c)}<h2>${c}・${words[c]}</h2><p>せんが じゅんばんに うごくよ</p>${guide(c, true)}<button class="secondary" id="hear">もういちど ${icon("sound")}</button></div>`;
-        document.querySelector("#hear").onclick = () => {
-          speak(`${c}、${words[c]}`);
-          const s = document.querySelector(".stroke-preview");
-          const clone = s.cloneNode(true);
-          s.replaceWith(clone);
-        };
-      }),
+        sayFeedback("あそぶと もじが ひらくよ");
+        b.classList.remove("wiggle");
+        void b.offsetWidth;
+        b.classList.add("wiggle");
+        return;
+      }
+      tone();
+
+      document.querySelector("#book-detail").innerHTML =
+        `<div class="book-detail">${picture(c)}<h2>${c}・${words[c]}</h2><p>せんが じゅんばんに うごくよ</p>${guide(c, true)}<button class="secondary" id="hear">もういちど ${icon("sound")}</button></div>`;
+      document.querySelector("#hear").onclick = () => {
+        const s = document.querySelector(".stroke-preview");
+        const clone = s.cloneNode(true);
+        s.replaceWith(clone);
+      };
+    }),
   );
 }
 go("home");

@@ -1,22 +1,34 @@
 // Original silhouette mazes. A seeded spanning tree gives branches and one route.
-export const MAZE_NAMES = { acorn: "どんぐり", butterfly: "ちょうちょ" };
+export const MAZE_NAMES = {
+  acorn: "どんぐり",
+  butterfly: "ちょうちょ",
+  rocket: "ロケット",
+};
 export function mazeModel(kind) {
   const rows =
-    kind === "acorn"
+    kind === "rocket"
       ? [
-          [2, 3, 4, 5],
-          [1, 2, 3, 4, 5, 6],
-          [1, 2, 3, 4, 5, 6],
-          [2, 3, 4, 5],
           [3, 4],
-        ]
-      : [
-          [0, 1, 6, 7],
-          [0, 1, 2, 3, 4, 5, 6, 7],
+          [2, 3, 4, 5],
+          [2, 3, 4, 5],
           [1, 2, 3, 4, 5, 6],
-          [0, 1, 2, 3, 4, 5, 6, 7],
-          [0, 1, 6, 7],
-        ];
+          [1, 2, 5, 6],
+        ]
+      : kind === "acorn"
+        ? [
+            [2, 3, 4, 5],
+            [1, 2, 3, 4, 5, 6],
+            [1, 2, 3, 4, 5, 6],
+            [2, 3, 4, 5],
+            [3, 4],
+          ]
+        : [
+            [0, 1, 6, 7],
+            [0, 1, 2, 3, 4, 5, 6, 7],
+            [1, 2, 3, 4, 5, 6],
+            [0, 1, 2, 3, 4, 5, 6, 7],
+            [0, 1, 6, 7],
+          ];
   const nodes = rows.flatMap((row, y) =>
     row.map((x) => ({
       id: `${x},${y}`,
@@ -31,7 +43,7 @@ export function mazeModel(kind) {
     goal = nodes.at(-1),
     edges = [],
     seen = new Set([start.id]);
-  let seed = kind === "acorn" ? 91 : 207;
+  let seed = kind === "rocket" ? 319 : kind === "acorn" ? 91 : 207;
   const random = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
@@ -85,6 +97,9 @@ export function onMazePath(model, p) {
   return model.edges.some(([a, b]) => segmentDistance(p, a, b) <= 19);
 }
 function silhouette(kind) {
+  if (kind === "rocket")
+    return '<path d="M320 18Q218 81 199 242L116 358L199 341L260 411H380L441 341L524 358L441 242Q422 81 320 18Z" fill="#c4e6f0" stroke="#81b9c8" stroke-width="5"/><path d="M286 414l34 56 34-56" fill="#ffd170"/><circle cx="320" cy="75" r="22" fill="#ffe7a3"/>';
+
   return kind === "acorn"
     ? '<path d="M165 136Q164 370 320 426Q476 370 475 136Z" fill="#f4cc89" stroke="#d5a368" stroke-width="5"/><path d="M142 147Q155 23 320 28Q485 23 498 147Z" fill="#b8956b" stroke="#947351" stroke-width="5"/><path d="M315 30q-10-25 15-26" fill="none" stroke="#947351" stroke-width="14" stroke-linecap="round"/>'
     : '<path d="M317 215C228 12 40 6 48 184Q50 256 142 264C13 296 62 451 179 406Q263 371 320 262Q375 371 461 406C578 451 627 296 498 264Q590 256 592 184C600 6 412 12 323 215Z" fill="#fbd7e5" stroke="#e8a9c3" stroke-width="5"/><path d="M308 113q-23-43-43-38m67 38q23-43 43-38" fill="none" stroke="#aa85af" stroke-width="5" stroke-linecap="round"/>';
@@ -104,10 +119,17 @@ export function mazeView(feedback) {
       "",
     )}</div><div class="maze-board" id="maze-board"></div>${feedback("あおい まるから ゆびで たどろう！")}<div class="maze-actions"><button class="secondary" id="maze-retry">↶ もういちど</button><button class="primary" id="maze-next" hidden>つぎの めいろ ›</button></div></main>`;
 }
-export function bindMaze({ activate, message, tone, onSuccess }) {
+export function bindMaze({
+  activate,
+  message,
+  tone,
+  onSuccess,
+  initialKind = "acorn",
+  onStage = () => {},
+}) {
   const board = document.querySelector("#maze-board"),
     next = document.querySelector("#maze-next");
-  let kind = "acorn",
+  let kind = initialKind,
     model,
     position,
     trail,
@@ -139,7 +161,8 @@ export function bindMaze({ activate, message, tone, onSuccess }) {
       .querySelector("#maze-trail")
       .setAttribute("points", trail.map((p) => `${p.x},${p.y}`).join(" "));
   }
-  function reset(id = kind) {
+  function reset(id = kind, reason = "start") {
+    onStage(id, reason);
     kind = id;
     model = mazeModel(kind);
     position = { ...model.start };
@@ -235,11 +258,12 @@ export function bindMaze({ activate, message, tone, onSuccess }) {
   );
   activate(document.querySelector("#maze-retry"), () => {
     tone();
-    reset();
+    reset(kind, "retry");
   });
   activate(next, () => {
     tone();
-    reset(kind === "acorn" ? "butterfly" : "acorn");
+    const ids = Object.keys(MAZE_NAMES);
+    reset(ids[(ids.indexOf(kind) + 1) % ids.length]);
   });
   reset();
   return () => {

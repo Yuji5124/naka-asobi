@@ -26,6 +26,14 @@ const MODELS = [
     { x: 0, y: 2, z: 1, color: "blue" },
   ],
 ];
+MODELS.push([
+  { x: 0, y: 0, z: 0, color: "blue" },
+  { x: 0, y: 1, z: 0, color: "gold" },
+  { x: 1, y: 0, z: 0, color: "blue" },
+  { x: 1, y: 1, z: 0, color: "gold" },
+  { x: 2, y: 0, z: 0, color: "green" },
+  { x: 2, y: 1, z: 0, color: "gold" },
+]);
 const FLAT = [
   {
     name: "ロケット",
@@ -61,6 +69,16 @@ const FLAT = [
     ],
   },
 ];
+FLAT.push({
+  name: "ふね",
+  cells: [
+    { slot: 1, type: "triangle", color: "gold", turn: 0 },
+    { slot: 4, type: "square", color: "blue", turn: 0 },
+    { slot: 6, type: "triangle", color: "gold", turn: 2 },
+    { slot: 7, type: "square", color: "blue", turn: 0 },
+    { slot: 8, type: "triangle", color: "gold", turn: 2 },
+  ],
+});
 const mod = (n) => ((n % 4) + 4) % 4;
 function project(x, y, z, angle) {
   const a = (x - 1.5) * Math.cos(angle) - (z - 1.5) * Math.sin(angle);
@@ -221,10 +239,18 @@ export function shapeGameView(mode, feedback) {
     build: "おてほんと おなじに つもう",
     arrange: "かたちを あわせよう",
   }[mode];
-  return `<main class="shape-screen shape-game ${mode}"><div class="stage-top"><button class="back" data-go="shapes" aria-label="かたちをえらぶ">‹</button><span class="stage-label">かたち / ${NAMES[mode]}</span></div><h1 class="task-title">${title}</h1><div class="shape-reference"><span class="sample-label">おてほん</span><div id="shape-model"></div><span class="shape-round" id="shape-round"></span></div><div class="shape-work"><div id="shape-world" class="shape-world"></div><div class="rotation-controls" ${mode === "arrange" ? "hidden" : ""}><button class="rotate-button" id="turn-left" aria-label="ひだりにまわす">↶</button><span>くるっと まわそう</span><button class="rotate-button" id="turn-right" aria-label="みぎにまわす">↷</button></div><div class="shape-tray" id="shape-tray" ${mode === "rotate" ? "hidden" : ""}></div></div>${feedback(mode === "rotate" ? "うしろは どうかな？" : mode === "build" ? "つみきを はこんでね" : "かたちを はこんでね")}<div class="shape-actions"><button class="secondary" id="shape-retry">もういちど</button>${mode === "build" ? '<button class="secondary shape-undo" id="shape-undo">ひとつ もどす</button>' : ""}<button class="primary" id="shape-next" hidden>つぎへ →</button></div></main>`;
+  return `<main class="shape-screen shape-game ${mode}"><div class="stage-top"><button class="back" data-go="shapes" aria-label="かたちをえらぶ">‹</button><span class="stage-label">かたち / ${NAMES[mode]}</span></div><h1 class="task-title">${title}</h1><div class="shape-reference"><span class="sample-label">おてほん</span><div id="shape-model"></div><span class="shape-round" id="shape-round"></span></div><div class="shape-work"><div id="shape-world" class="shape-world"></div><div class="rotation-controls" ${mode === "arrange" ? "hidden" : ""}><button class="rotate-button" id="turn-left" aria-label="ひだりにまわす"><b>↶</b><small>ひだりに まわす</small></button><span class="rotation-hint" id="rotation-direction">くるっと まわそう</span><button class="rotate-button" id="turn-right" aria-label="みぎにまわす"><b>↷</b><small>みぎに まわす</small></button></div><div class="shape-tray" id="shape-tray" ${mode === "rotate" ? "hidden" : ""}></div></div>${feedback(mode === "rotate" ? "うしろは どうかな？" : mode === "build" ? "つみきを はこんでね" : "かたちを はこんでね")}<div class="shape-actions"><button class="secondary" id="shape-retry">もういちど</button>${mode === "build" ? '<button class="secondary shape-undo" id="shape-undo">ひとつ もどす</button>' : ""}<button class="primary" id="shape-next" hidden>つぎへ →</button></div></main>`;
 }
-export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
-  let round = 0,
+export function bindShapeGame({
+  mode,
+  activate,
+  tone,
+  message,
+  onSuccess,
+  onStage = () => {},
+  startRound = 0,
+}) {
+  let round = startRound,
     cubes = [],
     placed = new Map(),
     selected = "gold",
@@ -242,7 +268,7 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
   const baseAngle = 0;
   const modelCubes = () => MODELS[round % MODELS.length];
   const flatGoal = () => FLAT[round % FLAT.length];
-  const targetOrientation = () => [1, 3, 2][round % 3];
+  const targetOrientation = () => [1, 3, 2, 1][round % 4];
   function render() {
     if (!alive) return;
     if (mode === "arrange") {
@@ -312,6 +338,15 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
     if (mode === "arrange") return;
     tone();
     orientation += direction;
+    const indicator = document.querySelector("#rotation-direction");
+    if (indicator)
+      indicator.textContent = direction < 0 ? "↶ ひだりへ！" : "みぎへ！ ↷";
+    const button = document.querySelector(
+      direction < 0 ? "#turn-left" : "#turn-right",
+    );
+    button?.classList.remove("turn-press");
+    void button?.offsetWidth;
+    button?.classList.add("turn-press");
     const destination = baseAngle + (orientation * Math.PI) / 2,
       initial = angle,
       start = performance.now();
@@ -390,7 +425,7 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
         )
         .join("") +
       (mode === "arrange"
-        ? '<button class="piece-turn" id="piece-turn" aria-label="さんかくをまわす">↻</button>'
+        ? '<div class="flat-rotation"><button class="piece-turn" id="piece-turn-left" aria-label="さんかくをひだりにまわす">↶<small>ひだりに まわす</small></button><button class="piece-turn" id="piece-turn" aria-label="さんかくをみぎにまわす">↷<small>みぎに まわす</small></button></div>'
         : "");
     tray.querySelectorAll("[data-shape-piece]").forEach((b) => {
       const choose = () => {
@@ -458,6 +493,13 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
         }
       };
     });
+    activate(document.querySelector("#piece-turn-left"), () => {
+      turn--;
+      tone();
+      selectedFlat = "triangle";
+      palette();
+      message("↶ ひだりに まわしたよ", "happy");
+    });
     activate(document.querySelector("#piece-turn"), () => {
       turn++;
       tone();
@@ -523,7 +565,8 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
       message("もういちど まわしてみよう");
     };
   }
-  function reset() {
+  function reset(reason = "start") {
+    onStage(round, reason);
     cancelAnimationFrame(frame);
     cubes = [];
     placed = new Map();
@@ -549,7 +592,7 @@ export function bindShapeGame({ mode, activate, tone, message, onSuccess }) {
   activate(document.querySelector("#turn-right"), () => rotate(1));
   activate(document.querySelector("#shape-retry"), () => {
     tone();
-    reset();
+    reset("retry");
   });
   activate(document.querySelector("#shape-next"), () => {
     if (!solved) return;

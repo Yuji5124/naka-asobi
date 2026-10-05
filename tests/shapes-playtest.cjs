@@ -43,6 +43,7 @@ fs.mkdirSync(dir, { recursive: true });
     await page.locator(".brand").tap();
     await page.locator("#start").tap();
     await page.locator('[data-go="shapes"]').tap();
+    await page.locator('[data-play-stage="0"]').tap();
   }
   async function touchDrag(from, to) {
     const c = await context.newCDPSession(page);
@@ -165,6 +166,7 @@ fs.mkdirSync(dir, { recursive: true });
   assert.deepEqual(saved.shapes.sort(), ["arrange", "build", "rotate"]);
   assert.deepEqual(saved.played, ["あ"]);
   assert.deepEqual(saved.stamps, ["みつけた"]);
+  await page.locator('[data-go="logs"]').tap();
   await page.locator('[data-go="record"]').tap();
   assert(
     (await page.locator("main").textContent()).includes(

@@ -117,12 +117,9 @@ fs.mkdirSync(artifacts, { recursive: true });
   assert(
     await page.evaluate(
       () =>
-        window.__audio.oscillators > 0 &&
-        window.__audio.speech.some(
-          (u) => u.text === "あ" && u.lang === "ja-JP",
-        ),
+        window.__audio.oscillators > 0 && window.__audio.speech.length === 0,
     ),
-    "Japanese speech request and sound output",
+    "music and sound output without speech",
   );
   await page.locator("#sound").tap();
   const mutedCounts = await page.evaluate(() => [
@@ -150,6 +147,7 @@ fs.mkdirSync(artifacts, { recursive: true });
   await page.locator("#start").tap();
   await screenshot("select-mobile");
   await page.locator('[data-stage="0"]').tap();
+  await page.locator('[data-play-stage="0"]').tap();
   await page.locator(".letter-card").filter({ hasText: "お" }).tap();
   assert.equal(await page.locator("#message").textContent(), "もういちど！");
   assert.equal(await page.locator(".found").count(), 0);
@@ -291,6 +289,7 @@ fs.mkdirSync(artifacts, { recursive: true });
     }
     for (const n of [0, 1, 2, 3]) {
       await page.locator(`[data-stage="${n}"]`).tap();
+      await page.locator('[data-play-stage="0"]').tap();
       await noOverflow();
       await screenshot(`stage-${n}-${size.width}`);
       if (size.width >= 900 && size.height >= 600 && size.width > size.height) {
@@ -325,12 +324,14 @@ fs.mkdirSync(artifacts, { recursive: true });
     }
   }
   await page.locator(".brand").tap();
+  await page.locator('[data-go="logs"]').tap();
   await page.locator('[data-go="record"]').tap();
   assert.equal(await page.locator(".sticker").count(), 4);
   // A direct-touch puzzle drag, independent of mouse fallback.
   await page.locator(".brand").tap();
   await page.locator("#start").tap();
   await page.locator('[data-stage="2"]').tap();
+  await page.locator('[data-play-stage="0"]').tap();
   const p = await page.locator('[data-piece="H"]').boundingBox(),
     s = await page.locator('[data-slot="1"]').boundingBox();
   const cdp = await context.newCDPSession(page);
@@ -362,6 +363,7 @@ fs.mkdirSync(artifacts, { recursive: true });
   await q.goto(base);
   await q.locator("#start").click();
   await q.locator('[data-stage="0"]').click();
+  await q.locator('[data-play-stage="0"]').click();
   assert.equal(await q.locator(".letter-card").count(), 8);
   await isolated.close();
   assert.deepEqual(errors, [], "browser console errors");
