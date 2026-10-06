@@ -56,12 +56,17 @@
 .world-park-art small { position: relative; z-index: 2; padding: 4px 14px; border-radius: 99px; background: #fff8; font-weight: 900; font-size: clamp(.9rem, 2.4vw, 1.2rem); }
 .before-world, .after-world { position: absolute; inset: 0; display: grid; align-content: center; justify-items: center; }
 .before-world[hidden], .after-world[hidden] { display: none; }
-.after-world strong { animation: changed-pop .6s cubic-bezier(.2,1.5,.5,1) both; }
+.comparison-world { width: min(96%, 760px); display: flex; align-items: center; justify-content: center; gap: clamp(3px, 1.5vw, 16px); }
+.comparison-world .before-world, .comparison-world .after-world { position: relative; inset: auto; flex: 1 1 0; min-width: 0; min-height: 100px; padding: 5px 2px; border: 3px solid #ffffffc9; border-radius: 20px; background: #fff8d9d9; }
+.comparison-world .before-world strong, .comparison-world .after-world strong { font-size: clamp(1.3rem, 4vw, 2.8rem); letter-spacing: 0; white-space: nowrap; }
+.comparison-world .after-world { background: #fff0b8; border-color: #ffc84d; }
+.comparison-world .after-world strong { animation: changed-pop .6s cubic-bezier(.2,1.5,.5,1) both; }
+.compare-arrow { flex: 0 0 auto; font-size: clamp(1.3rem, 4vw, 2.2rem); animation: compare-nudge .65s ease-in-out infinite alternate; }
 .change-caption { background: #fff3a6 !important; }
 .change-sparkle { position: absolute; top: 23%; right: 22%; font-size: 2.5rem; animation: sparkle-pop .75s ease-out both; }
 .thief-shadow { position: absolute; left: 10%; top: 15%; font-size: 2rem; opacity: .55; }
 .rush-away { animation: rush-away .8s ease-in forwards; }
-.thief-subtitle { margin: 0; text-align: center; font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 900; }
+.thief-instruction { align-self: center; margin: 0; padding: 7px 18px; border: 2px solid #c5e8ee; border-radius: 999px; color: #176980; background: #effcff; text-align: center; font-size: clamp(.98rem, 2.5vw, 1.25rem); font-weight: 1000; }
 .coin-missing-callout { align-self: center; margin: 0 0 -2px; padding: 5px 18px; border: 3px solid #ffc94a; border-radius: 999px; color: #78411f; background: #fff6ce; font-size: clamp(1rem, 2.8vw, 1.4rem); font-weight: 1000; animation: found-pop .5s cubic-bezier(.2,1.7,.4,1); }
 .forked-path { width: min(88%, 660px); display: grid; grid-template-columns: 1fr 1fr; align-items: center; }
 .forked-path span { padding: 7px; border-radius: 24px; color: #684d29; background: #fff9d8bd; font-size: clamp(1.35rem, 5vw, 3.5rem); line-height: 1.45; }
@@ -86,6 +91,8 @@
 }
 .thief-choice:active { transform: translateY(4px) scale(.98); box-shadow: 0 2px 0 #eedcaf; }
 .thief-choice:disabled { cursor: default; }
+.thief-choice:disabled { opacity: .56; filter: saturate(.65); }
+.choice-order { color: #1688b2; font-size: clamp(.78rem, 2vw, 1rem); font-weight: 1000; }
 .choice-art { font-size: clamp(2.1rem, 7vw, 4rem); line-height: 1.1; letter-spacing: -.14em; }
 .grass-sway { transform-origin: bottom center; animation: grass-sway .6s ease-in-out infinite alternate; }
 .thief-choice strong { font-size: clamp(1rem, 3vw, 1.4rem); }
@@ -102,6 +109,7 @@
 @keyframes rush-away { to { transform: translateX(75vw); opacity: 0; } }
 @keyframes gentle-shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 @keyframes grass-sway { to { transform: rotate(10deg) translateX(4px); } }
+@keyframes compare-nudge { to { transform: translateX(4px); } }
 @media (max-width: 600px) {
   .coin-thief-screen { min-height: 100dvh; border-radius: 0; padding: 10px; gap: 7px; }
   .tiny-police, .tiny-thief { font-size: 1.8rem; }

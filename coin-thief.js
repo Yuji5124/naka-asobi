@@ -22,16 +22,21 @@ const escape = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<":
 export function coinThiefView(level, stage) {
   const item = COIN_THIEF_STAGES[level][stage - 1];
   const changing = !!item.before;
+  const instruction = level === 1
+    ? "👀 あとを みつけたら タッチ！"
+    : level === 2
+      ? "🖼️ まえと くらべて、かわった ものを タッチ！"
+      : "🤫 しずかに すすめる ほうを タッチ！";
   return `<main class="coin-thief-screen level-${level}">
     <div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><div class="steps">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">コインどろぼう！ · ${level}-${stage}</span></div>
-    <div class="thief-heading"><span class="tiny-police">👮🚓</span><div><span class="thief-kicker">${level === 1 ? "あとを みつけよう！" : level === 2 ? "なにが かわった？" : "どろぼうに なろう"}</span><h1>${escape(item.prompt)}</h1></div><span class="tiny-thief" aria-hidden="true">👣✨</span></div>
+    <div class="thief-heading"><span class="tiny-police">👮🚓</span><div><span class="thief-kicker">${level === 1 ? "あとを みつけよう！" : level === 2 ? "なにが かわった？" : "コインを しずかに はこぼう"}</span><h1>${escape(item.prompt)}</h1></div><span class="tiny-thief" aria-hidden="true">👣✨</span></div>
     ${level === 1 && stage === 1 ? `<div class="coin-missing-callout">たいへん！ コインが ない！</div>` : ""}
     <section class="thief-world ${changing ? "changing" : ""}" aria-label="${escape(item.title)}">
-      <div class="world-sky"><span>☁️</span><span>☀️</span></div><div class="world-ground"><div class="world-park-art">${changing ? `<div class="before-world"><small>もと の ようす</small><strong>${item.before}</strong></div><div class="after-world" hidden><small class="change-caption">だれかが とおったよ！</small><strong>${item.after}</strong><span class="change-sparkle">✨</span></div>` : `<span class="police-car" aria-hidden="true">👮🚓</span>${level === 1 ? `<div class="forked-path" aria-hidden="true"><span>🌳　↖<br>🛤️　🌿</span><span>🌿　🛤️<br>↗　🌳</span></div>` : `<strong>${item.scene}</strong>`}<span class="world-bush">🌷　🌱　🌼</span>`}</div>${changing ? `<div class="thief-shadow" aria-hidden="true">💨　💨</div>` : level === 1 && stage === 1 ? "" : `<div class="tiny-coin" aria-hidden="true">🪙</div>`}</div>
+      <div class="world-sky"><span>☁️</span><span>☀️</span></div><div class="world-ground"><div class="world-park-art">${changing ? `<div class="comparison-world"><div class="before-world"><small>まえ</small><strong>${item.before}</strong></div><span class="compare-arrow" hidden>➡️</span><div class="after-world" hidden><small class="change-caption">いま</small><strong>${item.after}</strong></div></div>` : `<span class="police-car" aria-hidden="true">👮🚓</span>${level === 1 ? `<div class="forked-path" aria-hidden="true"><span>🌳　↖<br>🛤️　🌿</span><span>🌿　🛤️<br>↗　🌳</span></div>` : `<strong>${item.scene}</strong>`}<span class="world-bush">🌷　🌱　🌼</span>`}</div>${changing ? `<div class="thief-shadow" aria-hidden="true">💨　💨</div>` : level === 1 && stage === 1 ? "" : `<div class="tiny-coin" aria-hidden="true">🪙</div>`}</div>
     </section>
-    <p class="thief-subtitle">${changing ? "よーく みてね" : escape(item.title + "！")}</p>
-    <div class="thief-choices" role="group" aria-label="こたえを えらぶ">${item.choices.map((c) => `<button class="thief-choice" data-choice="${c.id}" ${changing ? "disabled" : ""}><span class="choice-art ${item.traceType === "moving-grass" && c.id === "right" ? "grass-sway" : ""}">${c.art.split("\\n").join("<br>")}</span><strong>${escape(c.text)}</strong></button>`).join("")}</div>
-    <div class="thief-feedback" aria-live="polite">${changing ? "へんかを さがそう！" : "みつけて タッチ！"}</div>
+    <p class="thief-instruction">${instruction}</p>
+    <div class="thief-choices" role="group" aria-label="こたえを えらぶ">${item.choices.map((c, i) => `<button class="thief-choice" data-choice="${c.id}" ${changing ? "disabled" : ""}><span class="choice-order">${level === 1 ? i === 0 ? "⬅️" : "➡️" : "ここ！"}</span><span class="choice-art ${item.traceType === "moving-grass" && c.id === "right" ? "grass-sway" : ""}">${c.art.split("\\n").join("<br>")}</span><strong>${escape(c.text)}</strong></button>`).join("")}</div>
+    <div class="thief-feedback" aria-live="polite">${changing ? "まずは まえの ようすを みよう" : level === 1 ? "あやしい あとを えらんでね" : level === 2 ? "かわった ものは どれかな？" : "どの みちが しずかかな？"}</div>
   </main>`;
 }
 
@@ -40,11 +45,11 @@ export function bindCoinThief({ level, stage, activate, tone, message, onMistake
   let done = false, timer = 0, successTimer = 0;
   const answerButtons = [...document.querySelectorAll(".thief-choice")];
   function showChangedWorld() {
-    document.querySelector(".before-world")?.setAttribute("hidden", "");
     document.querySelector(".after-world")?.removeAttribute("hidden");
+    document.querySelector(".compare-arrow")?.removeAttribute("hidden");
     document.querySelector(".thief-shadow")?.classList.add("rush-away");
     document.querySelectorAll(".thief-choice").forEach((b) => b.disabled = false);
-    document.querySelector(".thief-feedback").textContent = "なにが かわった？ タッチ！";
+    document.querySelector(".thief-feedback").textContent = "まえと くらべて、かわった ものを タッチ！";
     tone();
   }
   if (item.before) timer = window.setTimeout(showChangedWorld, 2300);
