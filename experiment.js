@@ -7,6 +7,7 @@ export const GAME_NAMES = {
   shape: "かたち",
   maze: "めいろ",
   find2: "みつける2（こうえん）",
+  number: "すうじ",
   crane: "クレーン",
 };
 const integer = (n) => (Number.isSafeInteger(n) && n >= 0 ? n : 0);
@@ -24,6 +25,7 @@ export function experimentDefaults() {
     schemaVersion: 2,
     totalPoints: 0,
     stageProgress: {},
+    numberDigitIndex: 0,
     coinBalance: 0,
     totalCoinsEarned: 0,
     totalCoinsSpent: 0,
@@ -42,9 +44,10 @@ export function experimentDefaults() {
 export function readExperiment(saved = {}) {
   const d = experimentDefaults();
   d.totalPoints = integer(saved.totalPoints);
+  d.numberDigitIndex = integer(saved.numberDigitIndex) % 9;
   d.stageProgress = Object.fromEntries(
     Object.entries(saved.stageProgress || {}).filter(([id, n]) =>
-      (GAME_NAMES[id] || /^(path|maze):[12]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
+      (GAME_NAMES[id] || /^(path|maze|number):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
     ),
   );
   d.totalCoinsEarned = Math.floor(d.totalPoints / 5);
