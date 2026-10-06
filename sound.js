@@ -34,9 +34,9 @@ export function sound(success = false) {
       timer = setInterval(music, 420);
     }
     const now = context.currentTime;
-    (success ? [523, 659, 784] : [440]).forEach((f, i) =>
-      note(f, now + i * 0.1),
-    );
+    if (success === "crane-start") [523, 659, 784, 988].forEach((f, i) => note(f, now + i * 0.12, 0.2, 0.05));
+    else if (success === "crane-down") [440, 392, 349].forEach((f, i) => note(f, now + i * 0.14, 0.16, 0.035));
+    else (success ? [523, 659, 784] : [440]).forEach((f, i) => note(f, now + i * 0.1));
   } catch {
     /* All games also work silently. */
   }

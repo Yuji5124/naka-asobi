@@ -457,6 +457,7 @@ main {
   width: 27px;
   border-radius: 12px;
 }
+.step-dot.done { background: #88c991; }
 .stage-label {
   color: var(--muted);
   font-size: 13px;
@@ -1865,6 +1866,13 @@ body[data-screen="play"] {
   border-color: #78a75a;
   box-shadow: 0 7px 0 #679c4b;
 }
+.puzzle-grid.grid-four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(500px, 74vw);
+  gap: 5px;
+  padding: 10px;
+}
+.grid-four .path-cell { border-radius: 10px; }
 .path-cell {
   background: #d0e9a2;
   border-radius: 12px;
@@ -2196,6 +2204,11 @@ body[data-screen="play"] {
     padding: 12px;
     gap: 7px;
   }
+  .play-screen .puzzle-grid.grid-four {
+    width: min(var(--board-size), 72vw);
+    padding: 8px;
+    gap: 4px;
+  }
   .play-screen .path-palette {
     gap: 10px;
     padding: 10px;
@@ -2485,6 +2498,10 @@ body[data-screen="play"] {
   }
   .puzzle-grid {
     width: calc(100vw - 134px);
+  }
+  .puzzle-grid.grid-four {
+    width: min(max(calc(100vw - 134px), 210px), 280px);
+    flex: 0 0 min(max(calc(100vw - 134px), 210px), 280px);
   }
   .play-actions .secondary svg {
     width: 20px;

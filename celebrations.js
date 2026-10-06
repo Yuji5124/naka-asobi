@@ -17,10 +17,15 @@ export function celebrate(result, tone, onCoinArrive = () => {}) {
     const a = (i * Math.PI) / 6;
     return `<circle cx="${100 + 60 * Math.cos(a)}" cy="${100 + 60 * Math.sin(a)}" r="19"/>`;
   }).join("");
-  el.innerHTML =
-    result.effect === "hanamaru"
-      ? `<svg class="hanamaru-stamp" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="#ee5b62" stroke-width="7">${petals}<circle cx="100" cy="100" r="38"/><path d="M76 100l17 17 33-38" stroke-linecap="round" stroke-linejoin="round"/></g></svg><strong>よく できました！</strong><span>⭐ ポイント +1</span>`
-      : `<div class="firework-sky" aria-hidden="true">${[0, 1, 2].map((n) => `<div class="firework" style="--n:${n}">${Array.from({ length: 12 }, (_, i) => `<i style="--a:${i * 30}deg"></i>`).join("")}</div>`).join("")}</div><strong>できた！</strong><span>⭐ ポイント +1</span>`;
+  const nextLabel = result.pointAwarded ? "⭐ ポイント +1" : "つぎの ステージへ！";
+  const main = result.effect === "hanamaru"
+    ? `<svg class="hanamaru-stamp" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="#ee5b62" stroke-width="7">${petals}<circle cx="100" cy="100" r="38"/><path d="M76 100l17 17 33-38" stroke-linecap="round" stroke-linejoin="round"/></g></svg><strong>よく できました！</strong>`
+    : result.effect === "fireworks"
+      ? `<div class="firework-sky" aria-hidden="true">${[0, 1, 2].map((n) => `<div class="firework" style="--n:${n}">${Array.from({ length: 12 }, (_, i) => `<i style="--a:${i * 30}deg"></i>`).join("")}</div>`).join("")}</div><strong>できた！</strong>`
+      : result.effect === "stamp"
+        ? `<div class="clear-stamp">${["できた！", "すごい！", "せいかい！"][Math.floor(Math.random()*3)]}</div><strong>やったね！</strong>`
+        : `<div class="clear-sparkles" aria-hidden="true">${Array.from({length:15},(_,i)=>`<i style="--i:${i};--angle:${i*24}deg">✦</i>`).join("")}</div><strong>ぴかぴか！</strong>`;
+  el.innerHTML = `${main}<span>${nextLabel}</span>`;
   if (result.effect === "hanamaru")
     el.insertAdjacentHTML(
       "beforeend",

@@ -3,10 +3,26 @@ export const MAZE_NAMES = {
   acorn: "どんぐり",
   butterfly: "ちょうちょ",
   rocket: "ロケット",
+  cloud: "くも",
+  shell: "かいがら",
+  flower: "おはな",
 };
 export function mazeModel(kind) {
   const rows =
-    kind === "rocket"
+    kind === "cloud"
+      ? [
+          [2,3,4,5],
+          [1,2,3,4,5,6],
+          [0,1,2,3,4,5,6,7],
+          [0,1,2,3,4,5,6,7],
+          [1,2,3,4,5,6,7],
+          [2,3,4,5,6],
+        ]
+      : kind === "shell"
+        ? [[1,2,3,4,5,6],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[1,2,3,4,5,6],[2,3,4,5,6]]
+        : kind === "flower"
+          ? [[3,4],[2,3,4,5],[1,2,3,4,5,6],[0,1,2,3,4,5,6,7],[1,2,3,4,5,6],[2,3,4,5]]
+      : kind === "rocket"
       ? [
           [3, 4],
           [2, 3, 4, 5],
@@ -43,7 +59,7 @@ export function mazeModel(kind) {
     goal = nodes.at(-1),
     edges = [],
     seen = new Set([start.id]);
-  let seed = kind === "rocket" ? 319 : kind === "acorn" ? 91 : 207;
+  let seed = ({ rocket:319, acorn:91, cloud:503, shell:619, flower:727 })[kind] || 207;
   const random = () => {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
@@ -107,24 +123,17 @@ function silhouette(kind) {
 export function mazeCardArt() {
   return '<svg class="activity-art maze-card-art" viewBox="0 0 160 130" aria-hidden="true"><rect x="15" y="12" width="130" height="104" rx="25" fill="#e7f2c3"/><path d="M36 38h34v32h34V38h25M36 70v25h93M70 95V70" stroke="#759153" stroke-width="19" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M36 38h34v32h34V38h25" stroke="#fff9e8" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36" cy="38" r="9" fill="#27b7d7"/><path d="m129 27 4 7 8 1-6 6 1 8-7-4-7 4 1-8-6-6 8-1z" fill="#ffbf36"/></svg>';
 }
-export function mazeView(feedback) {
-  return `<main class="maze-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">めいろ</span></div><h1 class="screen-title">ゴールまで たどろう！</h1><div class="maze-tabs" aria-label="めいろをえらぶ">${Object.entries(
-    MAZE_NAMES,
-  )
-    .map(
-      ([id, name]) =>
-        `<button class="secondary" data-maze="${id}" aria-pressed="false">${name}</button>`,
-    )
-    .join(
-      "",
-    )}</div><div class="maze-board" id="maze-board"></div>${feedback("あおい まるから ゆびで たどろう！")}<div class="maze-actions"><button class="secondary" id="maze-retry">↶ もういちど</button><button class="primary" id="maze-next" hidden>つぎの めいろ ›</button></div></main>`;
+export function mazeView(feedback, level = 1, stage = 1) {
+  return `<main class="maze-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">めいろ</span></div><h1 class="screen-title">ゴールまで たどろう！</h1><p class="screen-note">レベル ${level} · ステージ ${stage}</p><div class="maze-board" id="maze-board"></div>${feedback("あおい まるから ゆびで たどろう！")}<div class="maze-actions"><button class="secondary" id="maze-retry">↶ もういちど</button><button class="primary" id="maze-next" hidden>つぎの めいろ ›</button></div></main>`;
 }
 export function bindMaze({
   activate,
   message,
   tone,
   onSuccess,
+  onMistake = () => {},
   initialKind = "acorn",
+  level = 1,
   onStage = () => {},
 }) {
   const board = document.querySelector("#maze-board"),
@@ -171,11 +180,6 @@ export function bindMaze({
     pointer = null;
     next.hidden = true;
     board.classList.remove("completed");
-    document
-      .querySelectorAll("[data-maze]")
-      .forEach((b) =>
-        b.setAttribute("aria-pressed", String(b.dataset.maze === kind)),
-      );
     paint();
     message("あおい まるから ゆびで たどろう！");
   }
@@ -207,7 +211,7 @@ export function bindMaze({
         y: origin.y + ((target.y - origin.y) * i) / count,
       };
       if (!onMazePath(model, p)) {
-        if (!blocked) message("かべだね。べつの みちを ためそう！");
+        if (!blocked) { message("かべだね。べつの みちを ためそう！"); onMistake(); }
         blocked = true;
         update();
         return;
@@ -250,19 +254,13 @@ export function bindMaze({
     const [dx, dy] = dirs[e.key];
     advance({ x: position.x + dx * 8, y: position.y + dy * 8 });
   }
-  document.querySelectorAll("[data-maze]").forEach((b) =>
-    activate(b, () => {
-      tone();
-      reset(b.dataset.maze);
-    }),
-  );
   activate(document.querySelector("#maze-retry"), () => {
     tone();
     reset(kind, "retry");
   });
   activate(next, () => {
     tone();
-    const ids = Object.keys(MAZE_NAMES);
+    const all = Object.keys(MAZE_NAMES), ids = all.slice((level - 1) * 3, level * 3);
     reset(ids[(ids.indexOf(kind) + 1) % ids.length]);
   });
   reset();

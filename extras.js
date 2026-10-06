@@ -1,22 +1,11 @@
 import { escapeText } from "./experiment.js";
 export const PRIZES = [
-  { id: "rabbit", name: "おつきみ うさぎ", kind: "animal", color: "#f6cbdf" },
-  { id: "bus", name: "にじいろ バス", kind: "vehicle", color: "#7dc9dc" },
-  { id: "pudding", name: "ほしの プリン", kind: "food", color: "#f5d470" },
-  { id: "planet", name: "ふしぎな ほし", kind: "wonder", color: "#b5a0e0" },
+  ...[["dino","きょうりゅう","#8fc776","🦕"],["robot","ロボット","#89c9dc","🤖"],["firetruck","しょうぼうしゃ","#f08c72","🚒"],["police","パトカー","#8da8d7","🚓"],["train","でんしゃ","#edc85f","🚃"],["rocket","ロケット","#bc9ee0","🚀"],["camera","カメラ","#83c3b0","📷"],["chest","たからばこ","#d6a25f","🧰"],["crown","おうかん","#f1ca55","👑"],["ice","アイスクリーム","#f2a5c0","🍦"],["cake","ケーキ","#e999a5","🍰"],["balloon","ふうせん","#e78688","🎈"],["acorn","どんぐり","#bd955e","🌰"],["whale","くじら","#71bddd","🐳"],["penguin","ペンギン","#9cb9d0","🐧"],["frog","かえる","#8ecb73","🐸"],["cat","ねこ","#e5b27c","🐱"],["bear","くま","#c89470","🐻"],["ufo","UFO","#b49bda","🛸"],["game","ちいさな ゲームき","#75bdd2","🎮"]]
+    .map(([id, name, color, icon]) => ({ id, name, color, icon, kind: "toy" })),
 ];
 export function prizeArt(id) {
   const p = PRIZES.find((p) => p.id === id) || PRIZES[0];
-  const drawings = {
-    rabbit:
-      '<ellipse cx="34" cy="26" rx="10" ry="22"/><ellipse cx="65" cy="26" rx="10" ry="22"/><ellipse cx="50" cy="66" rx="34" ry="28"/><circle cx="38" cy="59" r="4" fill="#674932"/><circle cx="62" cy="59" r="4" fill="#674932"/><path d="M43 75q7 8 14 0" fill="none" stroke="#674932" stroke-width="4"/>',
-    bus: '<rect x="9" y="24" width="82" height="51" rx="14"/><path d="M24 35h17v19H24zm25 0h17v19H49zm25 0h8v19h-8z" fill="#fff9e4"/><circle cx="29" cy="78" r="11" fill="#674932"/><circle cx="74" cy="78" r="11" fill="#674932"/>',
-    pudding:
-      '<path d="M31 26h38l15 52H16Z"/><ellipse cx="50" cy="27" rx="20" ry="8" fill="#ad7850"/><path d="m50 42 5 10 11 1-8 8 2 11-10-5-10 5 2-11-8-8 11-1z" fill="#fff9e4"/>',
-    planet:
-      '<circle cx="50" cy="50" r="29"/><ellipse cx="50" cy="50" rx="45" ry="12" transform="rotate(-25 50 50)" fill="none" stroke="#f4c860" stroke-width="9"/><circle cx="37" cy="40" r="4" fill="white"/><circle cx="63" cy="59" r="4" fill="white"/>',
-  };
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><g fill="${p.color}" stroke-linejoin="round">${drawings[p.id]}</g></svg>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="40" fill="${p.color}" stroke="#fff7df" stroke-width="5"/><text x="50" y="70" text-anchor="middle" font-size="57" font-family="system-ui, sans-serif">${p.icon || "🎁"}</text></svg>`;
 }
 export function extraCardArt(kind) {
   return kind === "park"
@@ -26,7 +15,8 @@ export function extraCardArt(kind) {
 const tree = (x, y, s = 1) =>
   `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 76V5" stroke="#ac7850" stroke-width="20"/><path d="M-9-85C-62-96-87-40-60-13C-98 23-55 53-19 32C10 64 65 30 42-3C78-40 33-99-9-85Z" fill="#5da95c"/><circle cx="-34" cy="-37" r="16" fill="#8bc66b"/></g>`;
 export function parkArt(variant = 0) {
-  return `<svg viewBox="0 0 900 560" aria-hidden="true"><defs><linearGradient id="park-sky" x2="0" y2="1"><stop stop-color="#8bdcf0"/><stop offset="1" stop-color="#e7f8df"/></linearGradient></defs><rect width="900" height="560" fill="url(#park-sky)"/><circle cx="786" cy="65" r="34" fill="#ffe078"/><g fill="#fffef6"><ellipse cx="143" cy="67" rx="78" ry="26"/><ellipse cx="468" cy="49" rx="74" ry="22"/></g><path d="M0 170Q200 90 420 177T900 150V560H0Z" fill="#b6da82"/><path d="M360 180Q490 240 380 350T600 560" fill="none" stroke="#ffe6aa" stroke-width="74"/>${tree(128, 205)}${tree(785, 255, 1.1)}<g stroke="#ad7251" stroke-width="12" stroke-linecap="round"><path d="M194 283h143m-143 22h143m-129-46v82m114-82v82"/><path d="M507 145h155m-145 0-20 143m155-143 20 143"/></g><g stroke="#6e8895" stroke-width="5"><path d="M550 148v83m68-83v83"/><path d="M536 234h28m40 0h29" stroke-width="12"/></g><g><path d="M360 293V140h85v83" fill="none" stroke="#738eb4" stroke-width="12"/><path d="M444 207Q458 275 522 307" fill="none" stroke="#f88d77" stroke-width="29" stroke-linecap="round"/><path d="M362 193h75m-75 41h75m-75 40h75" stroke="#738eb4" stroke-width="9"/><path d="M350 148h101l-50-42z" fill="#efb354"/></g><ellipse cx="248" cy="431" rx="119" ry="57" fill="#d5a977"/><ellipse cx="248" cy="427" rx="103" ry="42" fill="#ffdf9f"/><path d="M223 438v-36h45v36m-55 0h65" stroke="#ed9474" stroke-width="7" fill="#f2ae89"/><g transform="translate(618 363)"><path d="M0 63V-18m76 81V-18" stroke="#90a998" stroke-width="10"/><path d="M-20-20h115v70H-20Z" fill="#7dc5d4"/><path d="M9 7h48M9 22h72" stroke="#fff7e5" stroke-width="7"/></g><g fill="#919c86"><ellipse cx="78" cy="414" rx="35" ry="21"/><ellipse cx="531" cy="457" rx="28" ry="18"/></g><g fill="#e794bc">${[70, 358, 726, 849].map((x, i) => `<g transform="translate(${x} ${340 + i * 38})"><path d="M0 24V-4" stroke="#74a352" stroke-width="6"/><circle cx="-8" cy="-7" r="10"/><circle cx="8" cy="-7" r="10"/><circle cy="-17" r="10"/><circle cy="3" r="10"/><circle cy="-7" r="6" fill="#ffe684"/></g>`).join("")}</g><g stroke="#79b64f" stroke-width="6" stroke-linecap="round">${[32, 110, 412, 580, 827].map((x, i) => `<path d="M${x} ${490 - i * 10}l-8-18m8 18 7-23m0 23 7-12"/>`).join("")}</g>${variant ? '<path d="M0 530q150-70 260 0t250 0 390 0v30H0Z" fill="#8ec876"/>' : ""}</svg>`;
+  const skyTop = variant === 2 ? "#b7b6e9" : "#8bdcf0", skyBottom = variant === 2 ? "#ffe0ca" : "#e7f8df";
+  return `<svg viewBox="0 0 900 560" aria-hidden="true"><defs><linearGradient id="park-sky" x2="0" y2="1"><stop stop-color="${skyTop}"/><stop offset="1" stop-color="${skyBottom}"/></linearGradient></defs><rect width="900" height="560" fill="url(#park-sky)"/><circle cx="786" cy="65" r="34" fill="#ffe078"/><g fill="#fffef6"><ellipse cx="143" cy="67" rx="78" ry="26"/><ellipse cx="468" cy="49" rx="74" ry="22"/></g><path d="M0 170Q200 90 420 177T900 150V560H0Z" fill="#b6da82"/><path d="M360 180Q490 240 380 350T600 560" fill="none" stroke="#ffe6aa" stroke-width="74"/>${tree(128, 205)}${tree(785, 255, 1.1)}<g stroke="#ad7251" stroke-width="12" stroke-linecap="round"><path d="M194 283h143m-143 22h143m-129-46v82m114-82v82"/><path d="M507 145h155m-145 0-20 143m155-143 20 143"/></g><g stroke="#6e8895" stroke-width="5"><path d="M550 148v83m68-83v83"/><path d="M536 234h28m40 0h29" stroke-width="12"/></g><g><path d="M360 293V140h85v83" fill="none" stroke="#738eb4" stroke-width="12"/><path d="M444 207Q458 275 522 307" fill="none" stroke="#f88d77" stroke-width="29" stroke-linecap="round"/><path d="M362 193h75m-75 41h75m-75 40h75" stroke="#738eb4" stroke-width="9"/><path d="M350 148h101l-50-42z" fill="#efb354"/></g><ellipse cx="248" cy="431" rx="119" ry="57" fill="#d5a977"/><ellipse cx="248" cy="427" rx="103" ry="42" fill="#ffdf9f"/><path d="M223 438v-36h45v36m-55 0h65" stroke="#ed9474" stroke-width="7" fill="#f2ae89"/><g transform="translate(618 363)"><path d="M0 63V-18m76 81V-18" stroke="#90a998" stroke-width="10"/><path d="M-20-20h115v70H-20Z" fill="#7dc5d4"/><path d="M9 7h48M9 22h72" stroke="#fff7e5" stroke-width="7"/></g><g fill="#919c86"><ellipse cx="78" cy="414" rx="35" ry="21"/><ellipse cx="531" cy="457" rx="28" ry="18"/></g><g fill="#e794bc">${[70, 358, 726, 849].map((x, i) => `<g transform="translate(${x} ${340 + i * 38})"><path d="M0 24V-4" stroke="#74a352" stroke-width="6"/><circle cx="-8" cy="-7" r="10"/><circle cx="8" cy="-7" r="10"/><circle cy="-17" r="10"/><circle cy="3" r="10"/><circle cy="-7" r="6" fill="#ffe684"/></g>`).join("")}</g><g stroke="#79b64f" stroke-width="6" stroke-linecap="round">${[32, 110, 412, 580, 827].map((x, i) => `<path d="M${x} ${490 - i * 10}l-8-18m8 18 7-23m0 23 7-12"/>`).join("")}</g>${variant ? '<path d="M0 530q150-70 260 0t250 0 390 0v30H0Z" fill="#8ec876"/>' : ""}</svg>`;
 }
 const positions = [
   { x: 145, y: 232, cover: true },
@@ -42,8 +32,8 @@ const positions = [
   { x: 841, y: 467, cover: true },
   { x: 384, y: 157 },
 ];
-export function parkView(feedback, variant) {
-  return `<main class="park-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">みつける 2 / こうえん ${variant + 1}</span></div><h1 class="screen-title">かくれた コインを みつけよう！</h1><p class="park-progress" id="park-progress">0 / 5 · ぜんぶ みつけて 1ポイント</p><div class="park-board" id="park-board">${parkArt(variant)}<div id="park-coins"></div></div>${feedback("き や はなの ちかくを さがそう！")}<div class="actions"><button class="secondary" id="park-retry">もういちど</button><button class="primary" id="park-next" hidden>つぎの こうえん ›</button></div></main>`;
+export function parkView(feedback, variant, stage = variant + 2) {
+  return `<main class="park-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">みつける · ステージ ${stage}</span></div><h1 class="screen-title">かくれた コインを みつけよう！</h1><p class="park-progress" id="park-progress">0 / 5 · ぜんぶ みつけよう</p><div class="park-board" id="park-board">${parkArt(variant)}<div id="park-coins"></div></div>${feedback("き や はなの ちかくを さがそう！")}<div class="actions"><button class="secondary" id="park-retry">もういちど</button><button class="primary" id="park-next" hidden>つぎの こうえん ›</button></div></main>`;
 }
 export function bindPark({
   variant,
@@ -67,7 +57,7 @@ export function bindPark({
   document.querySelector("#park-coins").innerHTML = chosen
     .map((i) => {
       const p = positions[i];
-      return `<button class="park-coin ${p.cover ? "covered" : ""}" data-park-coin="${i}" aria-label="かくれたコイン" style="left:${p.x / 9}%;top:${p.y / 5.6}%"><span>★</span></button>`;
+      return `<button class="park-coin ${p.cover ? "covered" : ""}" data-park-coin="${i}" aria-label="かくれたコイン" style="left:${p.x / 9}%;top:${p.y / 5.6}%"><span>🪙</span></button>`;
     })
     .join("");
   let found = 0;
@@ -93,7 +83,8 @@ export function bindPark({
 export function rewardView(data) {
   const unlocked = data.totalPoints >= 5,
     canPlay = unlocked && data.coinBalance > 0;
-  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${PRIZES.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${15 + i * 23}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
+  const display = [...PRIZES].sort(() => Math.random() - 0.5).slice(0, 4);
+  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${display.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${[15,38,61,84][i]}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
 }
 export function collectionView(data) {
   return `<main class="collection-screen"><div class="stage-top"><button class="back" data-go="reward">‹</button><span class="stage-label">たからもの</span></div><h1 class="screen-title">あつめた たからもの</h1><div class="treasure-grid">${
@@ -105,7 +96,7 @@ export function collectionView(data) {
       .join("") || "<p>クレーンで たからものを あつめよう！</p>"
   }</div></main>`;
 }
-export function bindCrane({ data, experiment, activate, tone, refresh }) {
+export function bindCrane({ data, experiment, activate, tone, refresh, celebratePrize = () => {} }) {
   let playing = false,
     busy = false,
     alive = true,
@@ -125,9 +116,11 @@ export function bindCrane({ data, experiment, activate, tone, refresh }) {
     playing = true;
     start.hidden = true;
     document.querySelector(".crane-start").hidden = true;
+    document.querySelector(".crane-machine").classList.add("reward-ready");
     controls.hidden = false;
+    result.classList.remove("prize-won");
     result.textContent = "よこに うごかして とる！";
-    tone();
+    tone("crane-start");
   });
   document.querySelector("#crane-position").oninput = (e) => {
     if (busy) return;
@@ -139,11 +132,12 @@ export function bindCrane({ data, experiment, activate, tone, refresh }) {
     take.disabled = true;
     document.querySelector("#crane-position").disabled = true;
     claw.classList.add("descending");
-    tone();
+    tone("crane-down");
     const x = Number(document.querySelector("#crane-position").value),
-      index = Math.round((x - 15) / 23),
-      p = PRIZES[index],
-      success = p && Math.abs(x - (15 + index * 23)) <= 10;
+      index = [15, 38, 61, 84].reduce((best, value, i, a) => Math.abs(x - value) < Math.abs(x - a[best]) ? i : best, 0),
+      target = document.querySelectorAll(".machine-prize")[index],
+      p = PRIZES.find((item) => item.id === target?.dataset.prize),
+      success = p && Math.abs(x - [15, 38, 61, 84][index]) <= 10;
     timers.push(
       setTimeout(() => {
         if (!alive) return;
@@ -157,6 +151,7 @@ export function bindCrane({ data, experiment, activate, tone, refresh }) {
             `<div class="carried-prize">${prizeArt(p.id)}</div>`,
           );
           tone(true);
+          navigator.vibrate?.(35);
         } else {
           result.textContent = "あっ、すべっちゃった！";
           tone();
@@ -172,7 +167,10 @@ export function bindCrane({ data, experiment, activate, tone, refresh }) {
         if (success) {
           experiment.prize(p.id);
           result.innerHTML = `${prizeArt(p.id)}<strong>${p.name}<br>とれた！</strong>`;
+          result.classList.add("prize-won");
+          celebratePrize();
           tone(true);
+          navigator.vibrate?.([30, 45, 30]);
         } else {
           result.innerHTML = "<strong>おしい！<br>また ためそう！</strong>";
           tone();
@@ -181,6 +179,7 @@ export function bindCrane({ data, experiment, activate, tone, refresh }) {
         controls.hidden = true;
         start.hidden = false;
         document.querySelector(".crane-start").hidden = false;
+        document.querySelector(".crane-machine").classList.remove("reward-ready");
         start.disabled = data.coinBalance < 1;
         start.textContent = "🪙 1まいで もういちど";
         document.querySelector("#reward-message").textContent =

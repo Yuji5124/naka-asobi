@@ -194,6 +194,14 @@ export function cubePicture(cubes, angle = 0, interactive = false) {
     );
     body += "</g>";
   }
+  if (interactive) {
+    body += '<g fill="#fff" fill-opacity=".005" stroke="none" aria-label="ひろい おくばしょ">';
+    for (let x = 0; x < 3; x++) for (let z = 0; z < 3; z++) {
+      const [cx, cy] = project(x + 0.5, 0, z + 0.5, angle);
+      body += `<circle cx="${cx}" cy="${cy}" r="27" data-cell="${x},${z}" role="button" tabindex="0" aria-label="${x + 1}ばん ${z + 1}ばんに つみきを おく"/>`;
+    }
+    body += "</g>";
+  }
   return `<svg viewBox="0 0 520 420" xmlns="http://www.w3.org/2000/svg" ${interactive ? 'aria-label="つみきをおく台。ますをタップして置けます"' : 'aria-hidden="true"'}>${body}</svg>`;
 }
 // Accept the same construction anywhere on the board, rather than grading its location.
@@ -233,13 +241,13 @@ export function shapeCardArt() {
 export function shapeSelection(friend) {
   return `<main class="shape-menu"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">かたち あそび</span></div><h1 class="screen-title">かたちで あそぼう！</h1><p class="screen-note">くるっと、ぽんっ。なにが できるかな？</p><div class="shape-mode-grid">${["rotate", "build", "arrange"].map((m, i) => `<button class="stage-card shape-mode" data-shape-mode="${m}">${i === 2 ? `<div class="flat-card">${flatPiece("square", "blue")}${flatPiece("triangle", "gold")}${flatPiece("circle", "pink")}</div>` : shapeCardArt()}<span><strong>${NAMES[m]}</strong><small>${["うしろは どう なってる？", "おてほんと おなじに つもう", "かたちを あわせよう"][i]}</small></span></button>`).join("")}</div><div class="select-friend"><div class="friend-mini">${friend()}</div>ためして、もういちど！</div></main>`;
 }
-export function shapeGameView(mode, feedback) {
+export function shapeGameView(mode, feedback, stage = 1) {
   const title = {
     rotate: "おなじ むきに まわそう",
     build: "おてほんと おなじに つもう",
     arrange: "かたちを あわせよう",
   }[mode];
-  return `<main class="shape-screen shape-game ${mode}"><div class="stage-top"><button class="back" data-go="shapes" aria-label="かたちをえらぶ">‹</button><span class="stage-label">かたち / ${NAMES[mode]}</span></div><h1 class="task-title">${title}</h1><div class="shape-reference"><span class="sample-label">おてほん</span><div id="shape-model"></div><span class="shape-round" id="shape-round"></span></div><div class="shape-work"><div id="shape-world" class="shape-world"></div><div class="rotation-controls" ${mode === "arrange" ? "hidden" : ""}><button class="rotate-button" id="turn-left" aria-label="ひだりにまわす"><b>↶</b><small>ひだりに まわす</small></button><span class="rotation-hint" id="rotation-direction">くるっと まわそう</span><button class="rotate-button" id="turn-right" aria-label="みぎにまわす"><b>↷</b><small>みぎに まわす</small></button></div><div class="shape-tray" id="shape-tray" ${mode === "rotate" ? "hidden" : ""}></div></div>${feedback(mode === "rotate" ? "うしろは どうかな？" : mode === "build" ? "つみきを はこんでね" : "かたちを はこんでね")}<div class="shape-actions"><button class="secondary" id="shape-retry">もういちど</button>${mode === "build" ? '<button class="secondary shape-undo" id="shape-undo">ひとつ もどす</button>' : ""}<button class="primary" id="shape-next" hidden>つぎへ →</button></div></main>`;
+  return `<main class="shape-screen shape-game ${mode}"><div class="stage-top"><button class="back" data-go="shapes" aria-label="かたちをえらぶ">‹</button><span class="stage-label">かたち / ${NAMES[mode]}</span></div><h1 class="task-title">${title}</h1><p class="screen-note">ステージ ${stage}</p><div class="shape-reference"><span class="sample-label">おてほん</span><div id="shape-model"></div><span class="shape-round" id="shape-round"></span></div><div class="shape-work"><div id="shape-world" class="shape-world"></div><div class="rotation-controls" ${mode === "arrange" ? "hidden" : ""}><button class="rotate-button" id="turn-left" aria-label="ひだりにまわす"><b>↶</b><small>ひだりに まわす</small></button><span class="rotation-hint" id="rotation-direction">くるっと まわそう</span><button class="rotate-button" id="turn-right" aria-label="みぎにまわす"><b>↷</b><small>みぎに まわす</small></button></div><div class="shape-tray" id="shape-tray" ${mode === "rotate" ? "hidden" : ""}></div></div>${feedback(mode === "rotate" ? "うしろは どうかな？" : mode === "build" ? "つみきを はこんでね" : "かたちを はこんでね")}<div class="shape-actions"><button class="secondary" id="shape-retry">もういちど</button>${mode === "build" ? '<button class="secondary shape-undo" id="shape-undo">ひとつ もどす</button>' : ""}<button class="primary" id="shape-next" hidden>つぎへ →</button></div></main>`;
 }
 export function bindShapeGame({
   mode,
