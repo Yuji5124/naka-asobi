@@ -66,6 +66,7 @@ node tests/shapes-playtest.cjs
 node tests/maze-playtest.cjs
 node tests/experiment-playtest.cjs
 node tests/experiment-layout.cjs
+node tests/path-orientation-playtest.cjs
 ```
 
 テスト用Playwrightはアプリの実行には不要です。`CHROMIUM_PATH`（既定 `/usr/bin/chromium`）、`TEST_BASE_URL`（既定 `http://127.0.0.1:8000`）、`TEST_ARTIFACT_DIR`（既定 `/tmp/hiragana-playtest`）でテスト環境を切り替えられます。
