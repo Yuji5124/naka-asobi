@@ -36,6 +36,12 @@ export function sound(success = false) {
     const now = context.currentTime;
     if (success === "crane-start") [523, 659, 784, 988].forEach((f, i) => note(f, now + i * 0.12, 0.2, 0.05));
     else if (success === "crane-down") [440, 392, 349].forEach((f, i) => note(f, now + i * 0.14, 0.16, 0.035));
+    else if (success === "bell") [988, 1318].forEach((f, i) => note(f, now + i * 0.08, 0.24, 0.035));
+    else if (success === "coin-clink") [784, 988, 1318].forEach((f, i) => note(f, now + i * 0.075, 0.16, 0.03));
+    else if (["footprints", "dropped-coin", "moving-grass", "moved-box", "opened-door", "puddle-footprints", "mud-avoidance", "quiet-path", "coin-noise"].includes(success)) {
+      const pitch = { footprints: 440, "dropped-coin": 784, "moving-grass": 659, "moved-box": 523, "opened-door": 587, "puddle-footprints": 698, "mud-avoidance": 494, "quiet-path": 659, "coin-noise": 880 }[success];
+      note(pitch, now, 0.11, 0.025);
+    }
     else (success ? [523, 659, 784] : [440]).forEach((f, i) => note(f, now + i * 0.1));
   } catch {
     /* All games also work silently. */

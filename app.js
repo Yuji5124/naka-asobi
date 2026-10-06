@@ -24,6 +24,7 @@ import {
   bindShapeGame,
 } from "./shapes.js";
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
+import { coinThiefView, bindCoinThief } from "./coin-thief.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -118,6 +119,7 @@ let variant = 0,
   pathLevel = 1,
   mazeLevel = 1,
   numberLevel = 1,
+  coinThiefLevel = 1,
   mazeKind = "acorn",
   parkVariant = 0,
   categoryPage = 0;
@@ -129,6 +131,7 @@ function progressKey(game = cycleGame) {
   if (game === "path") return `path:${pathLevel}`;
   if (game === "maze") return `maze:${mazeLevel}`;
   if (game === "number") return `number:${numberLevel}`;
+  if (game === "coin-thief") return `coin-thief:${coinThiefLevel}`;
   return game;
 }
 const experiment = createExperiment(data, save, updateHUD);
@@ -146,6 +149,7 @@ function award() {
   if (screen === "park") cycleGame = "find";
   else if (screen === "shape-play") cycleGame = "shape";
   else if (screen === "maze") cycleGame = "maze";
+  else if (screen === "coin-thief") cycleGame = "coin-thief";
   const oldBalance = data.coinBalance;
   const key = progressKey();
   cycleStage = data.stageProgress[key] || 1;
@@ -404,10 +408,11 @@ function go(to, reason = "start") {
   if (to === "home")
     body = `<main class="home">${homeSun()}<div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art">${homeParty()}<span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ であそぶ">${homeLetter(paths.あ)}</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="parent-link" data-go="logs" aria-label="保護者用きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select")
-    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button><button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button><button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button><button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button><button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button><button class="stage-card thief-category" data-go="coin-thief-levels"><span class="thief-card-art" aria-hidden="true">🪙👣🚓</span><span><span class="stage-number">あたらしい あそび</span><strong>コインどろぼう！</strong><small>あとを みつけよう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
   if (to === "select" && categoryPage === 1) categoryPage = 0;
   if (to === "stage-menu") body = stageMenuView();
   if (to === "number-levels") body = numberLevelView();
+  if (to === "coin-thief-levels") body = `<main class="stage-menu thief-level-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">コインどろぼう！</span></div><h1 class="screen-title">レベルを えらぼう</h1><div class="stage-choice-grid">${[1,2,3].map((n) => `<button class="stage-card" data-level="${n}" data-level-game="coin-thief"><span class="thief-card-art" aria-hidden="true">${["👣🛤️", "🌳📦✨", "🪙🤫🚓"][n - 1]}</span><span><strong>レベル ${n}</strong><small>${["あとを みつけよう", "なにが かわった？", "どろぼうに なろう"][n - 1]}</small></span></button>`).join("")}</div></main>`;
   if (to === "path-level" || to === "maze-level") {
     const path = to === "path-level";
     body = `<main class="stage-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">${path ? "つなぐ" : "めいろ"}</span></div><h1 class="screen-title">レベルを えらぼう</h1><div class="stage-choice-grid">${[1,2].map((n) => `<button class="stage-card" data-level="${n}" data-level-game="${path ? "path" : "maze"}">${path ? stageArt(2) : mazeCardArt()}<span><strong>レベル ${n}</strong><small>${path ? n === 1 ? "3 × 3" : "4 × 4" : n === 1 ? "いつもの めいろ" : "ひろい めいろ"}</small></span></button>`).join("")}</div></main>`;
@@ -426,6 +431,7 @@ function go(to, reason = "start") {
   if (to === "play")
     body = `<main class="play-screen stage-${stage}">${stageTop()}${[findView, traceView, pathView, writeView][stage]()}</main>`;
   if (to === "number") body = numberView(numberLevel, cycleStage, data.numberDigitIndex, feedback);
+  if (to === "coin-thief") body = coinThiefView(coinThiefLevel, cycleStage);
   if (to === "result")
     body = `<main class="result-screen">${stageTop()}<h1 class="screen-title">いっぱい あそんだね！</h1><div class="result-art"><span class="big-star">✦</span>${friend("happy")}<span class="big-star">✦</span></div><span class="sticker">なかよし<br>スタンプ</span><p class="screen-note">きょう なかよくなった もじ</p><div class="collected-row">${[...sessionLetters].map((c) => `<span>${c}</span>`).join("")}</div><div class="actions"><button class="secondary" data-go="select">まだ あそぶ</button><button class="primary" data-go="home">ホームへ ${icon("arrow")}</button></div></main>`;
   if (to === "book")
@@ -441,6 +447,7 @@ function go(to, reason = "start") {
     const digit = data.numberDigitIndex % 9 + 1;
     experiment.start("number", `number-L${numberLevel}-S${cycleStage}${numberLevel === 3 ? `-N${digit}` : ""}`, reason, { level: numberLevel, stage: cycleStage });
   }
+  if (to === "coin-thief") experiment.start("coin-thief", `coin-thief-L${coinThiefLevel}-S${cycleStage}`, reason, { level: coinThiefLevel, stage: cycleStage });
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -495,6 +502,23 @@ function go(to, reason = "start") {
         return last;
       },
       onNext() { go("number"); },
+    });
+  if (to === "coin-thief")
+    cleanupExtra = bindCoinThief({
+      level: coinThiefLevel,
+      stage: cycleStage,
+      activate,
+      tone,
+      message: sayFeedback,
+      onMistake: () => experiment.mistake(),
+      onChoice(choice) {
+        if (experiment.active) Object.assign(experiment.active, choice);
+        save();
+      },
+      onSuccess() {
+        const last = award();
+        if (!last) go("coin-thief");
+      },
     });
   if (to === "maze")
     cleanupMaze = bindMaze({
@@ -673,6 +697,7 @@ function bindCommon() {
     const n = Number(b.dataset.level), game = b.dataset.levelGame;
     tone(); cycleGame = game;
     if (game === "number") { numberLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; go("number"); }
+    else if (game === "coin-thief") { coinThiefLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; go("coin-thief"); }
     else if (game === "path") { pathLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; stage = 2; variant = cycleStage - 1; pathRound = cycleStage - 1; go("play"); }
     else {
       mazeLevel = n;

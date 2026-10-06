@@ -8,6 +8,7 @@ export const GAME_NAMES = {
   maze: "めいろ",
   find2: "みつける2（こうえん）",
   number: "すうじ",
+  "coin-thief": "コインどろぼう！",
   crane: "クレーン",
 };
 const integer = (n) => (Number.isSafeInteger(n) && n >= 0 ? n : 0);
@@ -47,7 +48,7 @@ export function readExperiment(saved = {}) {
   d.numberDigitIndex = integer(saved.numberDigitIndex) % 9;
   d.stageProgress = Object.fromEntries(
     Object.entries(saved.stageProgress || {}).filter(([id, n]) =>
-      (GAME_NAMES[id] || /^(path|maze|number):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
+      (GAME_NAMES[id] || /^(path|maze|number|coin-thief):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
     ),
   );
   d.totalCoinsEarned = Math.floor(d.totalPoints / 5);
@@ -335,7 +336,7 @@ export function parentLogView(data) {
       .reverse()
       .map(
         (s) =>
-          `<li>${GAME_NAMES[s.gameId]} / ${escapeText(s.stageId)} · ${duration(s.durationSec)} · ${s.completed ? "クリア" : "途中"} · ${s.pointsEarned || 0}pt${s.rewardItem ? " · 景品 " + escapeText(s.rewardItem) : ""}<small>${escapeText(s.startedAt)}${s.effect ? " · " + (({hanamaru:"はなまる",fireworks:"花火",stamp:"スタンプ",sparkles:"キラキラ"})[s.effect]) : ""}${s.retriedAfterEffect ? " → もう一度" : ""}</small></li>`,
+          `<li>${GAME_NAMES[s.gameId]} / ${escapeText(s.stageId)} · ${duration(s.durationSec)} · ${s.completed ? "クリア" : "途中"} · ${s.pointsEarned || 0}pt${s.rewardItem ? " · 景品 " + escapeText(s.rewardItem) : ""}<small>${escapeText(s.startedAt)}${s.effect ? " · " + (({hanamaru:"はなまる",fireworks:"花火",stamp:"スタンプ",sparkles:"キラキラ"})[s.effect]) : ""}${s.retriedAfterEffect ? " → もう一度" : ""}${s.gameId === "coin-thief" ? ` · 手がかり: ${escapeText(s.traceType || "-")} / 選択: ${escapeText(s.selectedPath || "-")}${s.coinsSelected ? ` / ${s.coinsSelected}まい` : ""} / まちがい: ${s.mistakeCount || 0}` : ""}</small></li>`,
       )
       .join("") || "<li>これから遊ぼう！</li>"
   }</ol><h2>コイン履歴</h2><ol>${
