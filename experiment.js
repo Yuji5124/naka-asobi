@@ -8,6 +8,7 @@ export const GAME_NAMES = {
   maze: "めいろ",
   find2: "みつける2（こうえん）",
   number: "すうじ",
+  "number-link": "すうじを つなぐ",
   "coin-thief": "コインどろぼう！",
   crane: "クレーン",
 };

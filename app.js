@@ -24,6 +24,7 @@ import {
   bindShapeGame,
 } from "./shapes.js";
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
+import { numberLinkView, bindNumberLinks } from "./number-links.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -416,6 +417,7 @@ function go(to, reason = "start") {
     body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button><button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button><button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
   if (to === "select" && categoryPage === 1) categoryPage = 0;
   if (to === "stage-menu") body = stageMenuView();
+  if (to === "connect-menu") body = `<main class="stage-menu connect-mode-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">つなぐ</span></div><h1 class="screen-title">どっちで あそぶ？</h1><div class="stage-choice-grid"><button class="stage-card" data-go="path-level">${stageArt(2)}<span><strong>みちを つなぐ</strong><small>みちを おいて ゴールへ</small></span></button><button class="stage-card" data-go="number-link"><span class="number-link-menu-art" aria-hidden="true">1　1</span><span><strong>すうじを つなぐ</strong><small>おなじ すうじを みつけよう</small></span></button></div></main>`;
   if (to === "number-levels") body = numberLevelView();
   if (to === "path-level" || to === "maze-level") {
     const path = to === "path-level";
@@ -435,6 +437,11 @@ function go(to, reason = "start") {
   if (to === "play")
     body = `<main class="play-screen stage-${stage}">${stageTop()}${[findView, traceView, pathView, writeView][stage]()}</main>`;
   if (to === "number") body = numberView(numberLevel, cycleStage, data.numberDigitIndex, feedback);
+  if (to === "number-link") {
+    cycleGame = "number-link";
+    cycleStage = data.stageProgress[progressKey()] || 1;
+    body = numberLinkView(cycleStage);
+  }
   if (to === "result")
     body = `<main class="result-screen">${stageTop()}<h1 class="screen-title">いっぱい あそんだね！</h1><div class="result-art"><span class="big-star">✦</span>${friend("happy")}<span class="big-star">✦</span></div><span class="sticker">なかよし<br>スタンプ</span><p class="screen-note">きょう なかよくなった もじ</p><div class="collected-row">${[...sessionLetters].map((c) => `<span>${c}</span>`).join("")}</div><div class="actions"><button class="secondary" data-go="select">まだ あそぶ</button><button class="primary" data-go="home">ホームへ ${icon("arrow")}</button></div></main>`;
   if (to === "book")
@@ -450,6 +457,7 @@ function go(to, reason = "start") {
     const digit = data.numberDigitIndex % 9 + 1;
     experiment.start("number", `number-L${numberLevel}-S${cycleStage}${numberLevel === 3 ? `-N${digit}` : ""}`, reason, { level: numberLevel, stage: cycleStage });
   }
+  if (to === "number-link") experiment.start("number-link", `number-link-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -504,6 +512,15 @@ function go(to, reason = "start") {
         return last;
       },
       onNext() { go("number"); },
+    });
+  if (to === "number-link")
+    cleanupExtra = bindNumberLinks({
+      stage: cycleStage,
+      tone,
+      onMistake: () => experiment.mistake(),
+      onSuccess() {
+        if (!award()) go("number-link");
+      },
     });
   if (to === "maze")
     cleanupMaze = bindMaze({
@@ -660,7 +677,7 @@ function bindCommon() {
       cycleGame = stageTarget;
       cycleStage = data.stageProgress[progressKey(cycleGame)] || 1;
       tone();
-      if (stageTarget === "path") go("path-level");
+      if (stageTarget === "path") go("connect-menu");
       else if (stageTarget === "find" && cycleStage > 1) {
         parkVariant = cycleStage - 2;
         go("park");
