@@ -21,7 +21,7 @@ export function celebrate(result, tone, onCoinArrive = () => {}) {
   const main = result.effect === "hanamaru"
     ? `<svg class="hanamaru-stamp" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="#ee5b62" stroke-width="7">${petals}<circle cx="100" cy="100" r="38"/><path d="M76 100l17 17 33-38" stroke-linecap="round" stroke-linejoin="round"/></g></svg><strong>よく できました！</strong>`
     : result.effect === "fireworks"
-      ? `<div class="firework-sky" aria-hidden="true">${[0, 1, 2].map((n) => `<div class="firework" style="--n:${n}">${Array.from({ length: 12 }, (_, i) => `<i style="--a:${i * 30}deg"></i>`).join("")}</div>`).join("")}</div><strong>できた！</strong>`
+      ? `<div class="firework-sky" aria-hidden="true">${[0, 1, 2].map((n) => `<div class="firework" style="--n:${n}">${Array.from({ length: 20 }, (_, i) => `<i style="--a:${i * 18}deg"></i>`).join("")}</div>`).join("")}<div class="firework firework-grand">${Array.from({length:36}, (_, i) => `<i style="--a:${i * 10}deg"></i>`).join("")}${Array.from({length:24}, (_, i) => `<i class="firework-inner" style="--a:${i * 15 + 5}deg"></i>`).join("")}</div></div><strong>できた！</strong>`
       : result.effect === "stamp"
         ? `<div class="clear-stamp">${["できた！", "すごい！", "せいかい！"][Math.floor(Math.random()*3)]}</div><strong>やったね！</strong>`
         : `<div class="clear-sparkles" aria-hidden="true">${Array.from({length:15},(_,i)=>`<i style="--i:${i};--angle:${i*24}deg">✦</i>`).join("")}</div><strong>ぴかぴか！</strong>`;
@@ -34,7 +34,7 @@ export function celebrate(result, tone, onCoinArrive = () => {}) {
   document.body.append(el);
   tone(true);
   if (result.effect === "fireworks" && !reduced)
-    [400, 950, 1450].forEach((t) =>
+    [220, 570, 920, 1280].forEach((t) =>
       timers.push(setTimeout(() => tone(true), t)),
     );
   const delay = reduced ? 550 : 2100;

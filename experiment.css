@@ -696,14 +696,39 @@
   background: #ffe177;
   border-radius: 50%;
   animation: firework-ray 0.8s ease-out both;
-  animation-delay: calc(0.3s + var(--n) * 0.5s);
-  --ray: 110px;
+  animation-delay: calc(0.2s + var(--n) * 0.35s);
+  --ray: clamp(100px, 20vmin, 200px);
+  box-shadow: 0 0 9px 2px currentColor;
+  color: #ffe177;
 }
 .firework:nth-child(2) i {
   background: #f49abe;
+  color: #f49abe;
 }
 .firework:nth-child(3) i {
   background: #98e4ef;
+  color: #98e4ef;
+}
+.firework.firework-grand { left: 50%; top: 45%; }
+.firework-grand i {
+  --ray: clamp(150px, 45vmin, 420px);
+  width: 10px;
+  height: 10px;
+  animation-delay: 1.25s;
+}
+.firework-grand i:nth-child(3n + 1) { background: #ffdc71; color: #ffdc71; }
+.firework-grand i:nth-child(3n + 2) { background: #ff9acb; color: #ff9acb; }
+.firework-grand i:nth-child(3n) { background: #9eeafa; color: #9eeafa; }
+.firework-grand i.firework-inner { --ray: clamp(90px, 26vmin, 240px); width: 7px; height: 7px; }
+.firework-grand i::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: -18px;
+  width: 4px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(transparent, currentColor);
 }
 @keyframes firework-ray {
   0% {
@@ -711,6 +736,9 @@
     opacity: 0;
   }
   15% {
+    opacity: 1;
+  }
+  65% {
     opacity: 1;
   }
   100% {
@@ -1169,6 +1197,11 @@ body[data-screen="logs"] {
   }
   .claw {
     transition-duration: 0.01ms !important;
+  }
+  .firework i {
+    animation: none !important;
+    transform: rotate(var(--a)) translateY(var(--ray));
+    opacity: .85;
   }
 }
 .maze-tabs {
