@@ -26,6 +26,7 @@ import {
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
 import { numberLinkLevelView, numberLinkView, bindNumberLinks } from "./number-links.js";
 import { spotDiffView, bindSpotDiff } from "./spot-diff.js";
+import { ropeMenuView, ropeView, bindRope } from "./rope-trace.js";
 import { coloringLevelView, coloringView, bindColoring } from "./coloring.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
@@ -441,6 +442,8 @@ function go(to, reason = "start") {
     body = `<main class="home">${homeSun()}<div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art">${homeParty()}<span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ であそぶ">${homeLetter(paths.あ)}</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="parent-link" data-go="logs" aria-label="保護者用きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select") body = selectView();
   if (to === "stage-menu") body = stageMenuView();
+  if (to === "trace-menu") body = ropeMenuView();
+  if (to === "rope-trace") { cycleGame = "rope-trace"; cycleStage = data.stageProgress[progressKey()] || 1; body = ropeView(cycleStage); }
   if (to === "connect-menu") body = `<main class="stage-menu connect-mode-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">つなぐ</span></div><h1 class="screen-title">どっちで あそぶ？</h1><div class="stage-choice-grid"><button class="stage-card" data-go="path-level">${stageArt(2)}<span><strong>みちを つなぐ</strong><small>みちを おいて ゴールへ</small></span></button><button class="stage-card" data-go="number-link-levels"><span class="number-link-menu-art" aria-hidden="true">1　1</span><span><strong>すうじを つなぐ</strong><small>おなじ すうじを みつけよう</small></span></button></div></main>`;
   if (to === "number-levels") body = numberLevelView();
   if (to === "number-link-levels") body = numberLinkLevelView();
@@ -487,6 +490,7 @@ function go(to, reason = "start") {
   if (to === "maze") body = mazeView(feedback, mazeLevel, cycleStage);
   if (to === "shapes") body = shapeSelection(friend);
   if (to === "shape-play") body = shapeGameView(shapeMode, feedback, cycleStage);
+  app.classList.toggle("rope-layout", to === "rope-trace");
   app.innerHTML = header() + body;
   if (to === "play") beginLegacy(reason);
   if (to === "number") {
@@ -496,7 +500,9 @@ function go(to, reason = "start") {
   if (to === "number-link") experiment.start("number-link", numberLinkLevel === 1 ? `number-link-S${cycleStage}` : `number-link-L${numberLinkLevel}-S${cycleStage}`, reason, { level: numberLinkLevel, stage: cycleStage });
   if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   if (to === "coloring") experiment.start("coloring", coloringLevel === 1 ? `coloring-S${cycleStage}` : `coloring-L${coloringLevel}-S${cycleStage}`, reason, { level: coloringLevel, stage: cycleStage });
+  if (to === "rope-trace") experiment.start("rope-trace", `rope-trace-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
+  if (to === "rope-trace") cleanupExtra = bindRope({ stage: cycleStage, activate, tone, onSuccess: award, onNext(completedStage) { go(completedStage >= 3 ? "select" : "rope-trace"); } });
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
   if (to === "shapes")
@@ -730,6 +736,7 @@ function bindCommon() {
     void app.offsetWidth;
     document.querySelector(".hero-friend .friend").classList.add("happy");
   });
+  activate(document.querySelector("[data-trace-letters]"), () => { stage = 1; cycleGame = "trace"; cycleStage = data.stageProgress.trace || 1; variant = cycleStage - 1; traceLetter = ["し", "の", "つ"][variant]; go("play"); });
   document.querySelectorAll("[data-stage]").forEach((b) =>
     activate(b, () => {
       stage = Number(b.dataset.stage);
@@ -737,7 +744,8 @@ function bindCommon() {
       cycleGame = stageTarget;
       cycleStage = data.stageProgress[progressKey(cycleGame)] || 1;
       tone();
-      if (stageTarget === "path") go("connect-menu");
+      if (stageTarget === "trace") go("trace-menu");
+      else if (stageTarget === "path") go("connect-menu");
       else if (stageTarget === "find" && cycleStage > 1) {
         parkVariant = cycleStage - 2;
         go("park");

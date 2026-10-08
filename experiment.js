@@ -2,6 +2,7 @@
 export const GAME_NAMES = {
   find: "みつける",
   trace: "なぞる",
+  "rope-trace": "なぞって くじびき",
   path: "つなぐ",
   write: "かく",
   shape: "かたち",
@@ -174,7 +175,7 @@ export function createExperiment(data, save, onChange = () => {}) {
       id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
       gameId,
       stageId,
-      appVersion: "2026-10-08-link-paint-levels",
+      appVersion: "2026-10-08-rope-trace",
       startedAt: now,
       endedAt: null,
       checkpointAt: now,
