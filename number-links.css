@@ -161,3 +161,21 @@
 @media (prefers-reduced-motion: reduce) {
   .number-link-screen *, .number-link-screen *::before, .number-link-screen *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+.number-link-level-art { height: 130px; display: grid; place-items: center; font-size: clamp(30px, 5vw, 54px); color: #e46d92; }
+.number-link-actions { display: flex; justify-content: center; gap: 12px; flex: 0 0 auto; }
+.number-link-actions button { min-height: 56px; padding: 8px 22px; }
+.number-series-a { background: #ef789b; }
+.number-series-b { background: #72bd60; }
+.scattered-numbers .number-sticker { width: clamp(56px, 7vw, 74px); font-size: clamp(26px, 4vw, 40px); border-width: 4px; }
+.scattered-numbers .number-paper { background: linear-gradient(135deg, #fffefb, #fffaf0); }
+@media (min-width: 601px) and (orientation: portrait) {
+  .number-link-screen { height: calc(100svh - 100px); min-height: 0; overflow: hidden; padding: 8px 18px 12px; gap: 8px; }
+  .number-paper { flex: 1 1 auto; min-height: 0; height: auto; }
+  .number-link-heading h1 { font-size: clamp(24px, 4vw, 32px); }
+}
+@media (max-width: 600px) {
+  .scattered-numbers .number-sticker { width: 56px; font-size: 28px; }
+  .scattered-numbers .number-paper { height: min(48svh, 410px); min-height: 300px; }
+  .number-link-level-art { width: 38%; height: 95px; font-size: 26px; }
+}

@@ -115,3 +115,36 @@
   .color-swatch span { font-size: 32px; }
   .coloring-actions button { min-height: 50px; padding-inline: 16px; }
 }
+
+.coloring-level-art { height: 130px; display: grid; place-items: center; color: #e97886; font-size: 58px; }
+.freepaint-board { min-height: 0; overflow: hidden; }
+.freepaint-area { position: relative; height: 100%; max-height: 480px; max-width: 100%; aspect-ratio: 1; flex-shrink: 0; }
+.freepaint-area canvas, .freepaint-area svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.freepaint-area canvas { touch-action: none; user-select: none; cursor: crosshair; }
+.freepaint-area svg { pointer-events: none; }
+.freepaint-meter { display: flex; align-items: center; justify-content: center; gap: 12px; color: #568b55; font-weight: 900; }
+.freepaint-meter progress { width: clamp(150px, 25vw, 260px); height: 18px; accent-color: #72bd60; }
+@media (min-width: 700px) and (orientation: landscape) and (max-height: 900px) {
+  .freepaint-screen {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    grid-template-rows: 56px 40px 26px minmax(0, 1fr) 22px 30px 60px;
+    gap: 6px 16px;
+  }
+  .freepaint-screen .stage-top { grid-column: 1 / -1; grid-row: 1; margin: 0; }
+  .freepaint-screen > .screen-title { grid-column: 1 / -1; grid-row: 2; }
+  .freepaint-screen > .screen-note { grid-column: 1 / -1; grid-row: 3; }
+  .freepaint-screen .coloring-palette { grid-column: 1; grid-row: 4; flex-direction: column; align-self: center; }
+  .freepaint-screen .freepaint-board { grid-column: 2; grid-row: 4; height: 100%; padding: 4px; }
+  .freepaint-screen .freepaint-meter { grid-column: 1 / -1; grid-row: 5; }
+  .freepaint-screen .coloring-message { grid-column: 1 / -1; grid-row: 6; }
+  .freepaint-screen .coloring-actions { grid-column: 1 / -1; grid-row: 7; }
+}
+@media (max-width: 600px) {
+  .freepaint-board { flex: 0 0 320px; min-height: 0; padding: 8px; }
+  .freepaint-area { width: 100%; height: auto; }
+  .coloring-level-art { width: 38%; height: 95px; font-size: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paint-shape.painted { animation: none; }
+}

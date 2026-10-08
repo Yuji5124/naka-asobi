@@ -8,6 +8,7 @@ export const GAME_NAMES = {
   maze: "めいろ",
   find2: "みつける2（こうえん）",
   number: "すうじ",
+  coloring: "いろぬり",
   "number-link": "すうじを つなぐ",
   "spot-diff": "まちがいさがし",
   "coin-thief": "コインどろぼう！",
@@ -50,7 +51,7 @@ export function readExperiment(saved = {}) {
   d.numberDigitIndex = integer(saved.numberDigitIndex) % 9;
   d.stageProgress = Object.fromEntries(
     Object.entries(saved.stageProgress || {}).filter(([id, n]) =>
-      (GAME_NAMES[id] || /^(path|maze|number|coin-thief):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
+      (GAME_NAMES[id] || /^(path|maze|number|number-link|coloring|coin-thief):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
     ),
   );
   d.totalCoinsEarned = Math.floor(d.totalPoints / 5);
@@ -173,7 +174,7 @@ export function createExperiment(data, save, onChange = () => {}) {
       id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
       gameId,
       stageId,
-      appVersion: "2026-10-rewards-v2",
+      appVersion: "2026-10-08-link-paint-levels",
       startedAt: now,
       endedAt: null,
       checkpointAt: now,

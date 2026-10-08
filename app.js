@@ -24,9 +24,9 @@ import {
   bindShapeGame,
 } from "./shapes.js";
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
-import { numberLinkView, bindNumberLinks } from "./number-links.js";
+import { numberLinkLevelView, numberLinkView, bindNumberLinks } from "./number-links.js";
 import { spotDiffView, bindSpotDiff } from "./spot-diff.js";
-import { coloringView, bindColoring } from "./coloring.js";
+import { coloringLevelView, coloringView, bindColoring } from "./coloring.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -121,6 +121,8 @@ let variant = 0,
   pathLevel = 1,
   mazeLevel = 1,
   numberLevel = 1,
+  numberLinkLevel = 1,
+  coloringLevel = 1,
   coinThiefLevel = 1,
   mazeKind = "acorn",
   parkVariant = 0,
@@ -133,6 +135,9 @@ function progressKey(game = cycleGame) {
   if (game === "path") return `path:${pathLevel}`;
   if (game === "maze") return `maze:${mazeLevel}`;
   if (game === "number") return `number:${numberLevel}`;
+  // Preserve the original level-one progress keys for existing saves.
+  if (game === "number-link") return numberLinkLevel === 1 ? game : `${game}:${numberLinkLevel}`;
+  if (game === "coloring") return coloringLevel === 1 ? game : `${game}:${coloringLevel}`;
   if (game === "coin-thief") return `coin-thief:${coinThiefLevel}`;
   return game;
 }
@@ -361,7 +366,7 @@ function selectView() {
     `<button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button>`,
     `<button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><span class="stage-number">こうえん</span><strong>コインさがし</strong><small>こうえんを たんけん</small></span></button>`,
     `<button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button>`,
-    `<button class="stage-card coloring-category" data-go="coloring"><span class="coloring-menu-art" aria-hidden="true">${paintIcon}</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
+    `<button class="stage-card coloring-category" data-go="coloring-levels"><span class="coloring-menu-art" aria-hidden="true">${paintIcon}</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
   ];
   const cards = categoryPage === 0
     ? [...core, `<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button>`, `<button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button>`]
@@ -436,8 +441,10 @@ function go(to, reason = "start") {
     body = `<main class="home">${homeSun()}<div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art">${homeParty()}<span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ であそぶ">${homeLetter(paths.あ)}</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="parent-link" data-go="logs" aria-label="保護者用きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select") body = selectView();
   if (to === "stage-menu") body = stageMenuView();
-  if (to === "connect-menu") body = `<main class="stage-menu connect-mode-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">つなぐ</span></div><h1 class="screen-title">どっちで あそぶ？</h1><div class="stage-choice-grid"><button class="stage-card" data-go="path-level">${stageArt(2)}<span><strong>みちを つなぐ</strong><small>みちを おいて ゴールへ</small></span></button><button class="stage-card" data-go="number-link"><span class="number-link-menu-art" aria-hidden="true">1　1</span><span><strong>すうじを つなぐ</strong><small>おなじ すうじを みつけよう</small></span></button></div></main>`;
+  if (to === "connect-menu") body = `<main class="stage-menu connect-mode-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">つなぐ</span></div><h1 class="screen-title">どっちで あそぶ？</h1><div class="stage-choice-grid"><button class="stage-card" data-go="path-level">${stageArt(2)}<span><strong>みちを つなぐ</strong><small>みちを おいて ゴールへ</small></span></button><button class="stage-card" data-go="number-link-levels"><span class="number-link-menu-art" aria-hidden="true">1　1</span><span><strong>すうじを つなぐ</strong><small>おなじ すうじを みつけよう</small></span></button></div></main>`;
   if (to === "number-levels") body = numberLevelView();
+  if (to === "number-link-levels") body = numberLinkLevelView();
+  if (to === "coloring-levels") body = coloringLevelView();
   if (to === "path-level" || to === "maze-level") {
     const path = to === "path-level";
     body = `<main class="stage-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">${path ? "つなぐ" : "めいろ"}</span></div><h1 class="screen-title">レベルを えらぼう</h1><div class="stage-choice-grid">${[1,2].map((n) => `<button class="stage-card" data-level="${n}" data-level-game="${path ? "path" : "maze"}">${path ? stageArt(2) : mazeCardArt()}<span><strong>レベル ${n}</strong><small>${path ? n === 1 ? "3 × 3" : "4 × 4" : n === 1 ? "いつもの めいろ" : "ひろい めいろ"}</small></span></button>`).join("")}</div></main>`;
@@ -459,7 +466,7 @@ function go(to, reason = "start") {
   if (to === "number-link") {
     cycleGame = "number-link";
     cycleStage = data.stageProgress[progressKey()] || 1;
-    body = numberLinkView(cycleStage);
+    body = numberLinkView(cycleStage, numberLinkLevel);
   }
   if (to === "spot-diff") {
     cycleGame = "spot-diff";
@@ -468,8 +475,8 @@ function go(to, reason = "start") {
   }
   if (to === "coloring") {
     cycleGame = "coloring";
-    cycleStage = data.stageProgress.coloring || 1;
-    body = coloringView(cycleStage);
+    cycleStage = data.stageProgress[progressKey()] || 1;
+    body = coloringView(cycleStage, coloringLevel);
   }
   if (to === "result")
     body = `<main class="result-screen">${stageTop()}<h1 class="screen-title">いっぱい あそんだね！</h1><div class="result-art"><span class="big-star">✦</span>${friend("happy")}<span class="big-star">✦</span></div><span class="sticker">なかよし<br>スタンプ</span><p class="screen-note">きょう なかよくなった もじ</p><div class="collected-row">${[...sessionLetters].map((c) => `<span>${c}</span>`).join("")}</div><div class="actions"><button class="secondary" data-go="select">まだ あそぶ</button><button class="primary" data-go="home">ホームへ ${icon("arrow")}</button></div></main>`;
@@ -486,9 +493,9 @@ function go(to, reason = "start") {
     const digit = data.numberDigitIndex % 9 + 1;
     experiment.start("number", `number-L${numberLevel}-S${cycleStage}${numberLevel === 3 ? `-N${digit}` : ""}`, reason, { level: numberLevel, stage: cycleStage });
   }
-  if (to === "number-link") experiment.start("number-link", `number-link-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "number-link") experiment.start("number-link", numberLinkLevel === 1 ? `number-link-S${cycleStage}` : `number-link-L${numberLinkLevel}-S${cycleStage}`, reason, { level: numberLinkLevel, stage: cycleStage });
   if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
-  if (to === "coloring") experiment.start("coloring", `coloring-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "coloring") experiment.start("coloring", coloringLevel === 1 ? `coloring-S${cycleStage}` : `coloring-L${coloringLevel}-S${cycleStage}`, reason, { level: coloringLevel, stage: cycleStage });
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -547,11 +554,13 @@ function go(to, reason = "start") {
   if (to === "number-link")
     cleanupExtra = bindNumberLinks({
       stage: cycleStage,
+      level: numberLinkLevel,
+      activate,
       tone,
       onMistake: () => experiment.mistake(),
-      onSuccess() {
-        if (!award()) go("number-link");
-      },
+      onSuccess: award,
+      onRetry() { go("number-link", "retry"); },
+      onNext(completedStage) { go(completedStage >= 3 ? "select" : "number-link"); },
     });
   if (to === "spot-diff")
     bindSpotDiff({
@@ -566,6 +575,7 @@ function go(to, reason = "start") {
   if (to === "coloring")
     cleanupExtra = bindColoring({
       stage: cycleStage,
+      level: coloringLevel,
       activate,
       tone,
       onSuccess: award,
@@ -749,7 +759,9 @@ function bindCommon() {
     const n = Number(b.dataset.level), game = b.dataset.levelGame;
     if (game === "coin-thief") { go("select", "disabled-game"); return; }
     tone(); cycleGame = game;
-    if (game === "number") { numberLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; go("number"); }
+    if (game === "number-link") { numberLinkLevel = n; go("number-link"); }
+    else if (game === "coloring") { coloringLevel = n; go("coloring"); }
+    else if (game === "number") { numberLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; go("number"); }
     else if (game === "path") { pathLevel = n; cycleStage = data.stageProgress[progressKey(game)] || 1; stage = 2; variant = cycleStage - 1; pathRound = cycleStage - 1; go("play"); }
     else {
       mazeLevel = n;
