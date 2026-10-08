@@ -117,6 +117,11 @@
 .number-1 { background: #ef789b; }
 .number-2 { background: #4eafe0; }
 .number-3 { background: #72bd60; }
+.number-sticker:active {
+  /* Keep the centering transform: the shared button press rule replaces it. */
+  transform: translate(-50%, -50%) !important;
+  box-shadow: 0 0 0 7px #ffdf74, 0 7px 18px #72561b44 !important;
+}
 .number-sticker.selected { box-shadow: 0 0 0 7px #ffdf74, 0 7px 18px #72561b44; animation: number-selected .7s ease-in-out infinite alternate; }
 .number-sticker.matched { filter: saturate(.8) brightness(1.04); }
 .number-link-feedback {
@@ -127,7 +132,7 @@
   font-weight: 1000;
 }
 .number-bump { animation: number-bump .28s ease-in-out; }
-@keyframes number-selected { to { transform: translate(-50%, -50%) scale(1.08); } }
+@keyframes number-selected { to { box-shadow: 0 0 0 10px #ffe99b, 0 7px 18px #72561b44; } }
 @keyframes number-bump { 25% { translate: -5px 0; } 75% { translate: 5px 0; } }
 @keyframes number-line-pop { from { stroke-width: 2; opacity: .3; } to { stroke-width: 10; opacity: .9; } }
 @media (max-width: 600px) {
