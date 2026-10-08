@@ -1,0 +1,116 @@
+.coloring-screen {
+  width: min(100%, 1100px);
+  min-height: min(880px, calc(100svh - 72px));
+  margin: 0 auto;
+  padding: clamp(10px, 2vw, 22px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.5svh, 16px);
+  color: #59432e;
+}
+.coloring-screen .stage-top { width: 100%; flex: 0 0 auto; }
+.coloring-screen > .screen-title { margin: 0; text-align: center; }
+.coloring-screen > .screen-note { margin: 0; text-align: center; }
+.coloring-palette {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(14px, 4vw, 36px);
+}
+.color-swatch {
+  width: clamp(68px, 10vw, 96px);
+  height: clamp(68px, 10vw, 96px);
+  padding: 5px;
+  display: grid;
+  place-items: center;
+  border: 4px solid #fff;
+  border-radius: 24px;
+  color: #654c32;
+  background: #fff8e5;
+  box-shadow: 0 5px 0 #d3c19b;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.color-swatch span { color: var(--paint); font-size: clamp(32px, 5vw, 50px); line-height: 1; }
+.color-swatch small { font-size: 13px; font-weight: 900; }
+.color-swatch.selected { transform: translateY(-4px) scale(1.06); border-color: #ffd86a; box-shadow: 0 8px 0 #d3c19b, 0 0 0 4px #ffeaa6; }
+.coloring-board {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(18px, 6vw, 70px);
+  padding: 14px;
+  border: 4px solid #fff;
+  border-radius: 32px;
+  background: linear-gradient(145deg, #fffdf6, #fff5d9);
+  box-shadow: 0 7px 0 #decda5;
+}
+.paint-shape {
+  width: clamp(112px, 22vw, 210px);
+  aspect-ratio: 1;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+  border: 3px solid transparent;
+  border-radius: 28px;
+  background: #fff9e9;
+  transition: transform .15s ease, background .15s ease;
+}
+.paint-shape svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 5px 0 #bba67960); }
+.paint-shape small { color: #886b42; font-size: 16px; font-weight: 900; }
+.paint-shape.painted { animation: paint-pop .28s ease-out; }
+.coloring-message { min-height: 1.5em; color: #568b55; font-size: clamp(18px, 2.8vw, 24px); font-weight: 1000; text-align: center; }
+.coloring-actions { width: 100%; display: flex; justify-content: center; gap: 16px; }
+.coloring-actions button { min-height: 56px; }
+.coloring-menu-art {
+  width: 100%;
+  min-height: 100px;
+  display: grid;
+  place-items: center;
+  color: #e97c89;
+  font-size: clamp(32px, 5vw, 54px);
+  letter-spacing: .08em;
+  text-shadow: 3px 4px 0 #f7d47d;
+}
+@keyframes paint-pop { 50% { transform: scale(1.1) rotate(-4deg); } }
+
+@media (min-width: 601px) and (orientation: portrait) {
+  .coloring-screen {
+    height: calc(100svh - 100px);
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 6px 20px 12px;
+    gap: 8px;
+  }
+  .coloring-screen > .screen-title { font-size: clamp(26px, 4vw, 34px); }
+  .coloring-screen > .screen-note { font-size: 16px; }
+  .coloring-palette { gap: 20px; }
+  .color-swatch { width: 78px; height: 78px; }
+  .coloring-board { min-height: 0; }
+  .paint-shape { width: min(23vw, 185px); }
+}
+@media (min-width: 700px) and (orientation: landscape) and (max-height: 900px) {
+  .coloring-screen { height: calc(100svh - 88px); min-height: 0; box-sizing: border-box; overflow: hidden; padding: 6px 24px 10px; gap: 7px; }
+  .coloring-screen > .screen-title { font-size: clamp(26px, 3.4vw, 34px); }
+  .coloring-screen > .screen-note { font-size: 16px; }
+  .coloring-palette { gap: 16px; }
+  .color-swatch { width: 68px; height: 68px; border-radius: 18px; }
+  .color-swatch span { font-size: 34px; }
+  .coloring-board { min-height: 0; }
+  .paint-shape { width: min(22vw, 150px); }
+  .coloring-menu-art { height: clamp(56px, 12svh, 92px); min-height: 0; }
+}
+@media (max-width: 600px) {
+  .coloring-screen { min-height: calc(100svh - 62px); padding: 8px 14px 18px; gap: 9px; }
+  .coloring-screen > .screen-title { font-size: clamp(23px, 6vw, 30px); }
+  .coloring-board { min-height: 220px; gap: 8px; padding: 8px; border-radius: 22px; }
+  .paint-shape { width: min(28vw, 112px); padding: 4px; border-radius: 18px; }
+  .paint-shape small { font-size: 12px; }
+  .color-swatch { width: 66px; height: 66px; border-radius: 18px; }
+  .color-swatch span { font-size: 32px; }
+  .coloring-actions button { min-height: 50px; padding-inline: 16px; }
+}

@@ -26,6 +26,7 @@ import {
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
 import { numberLinkView, bindNumberLinks } from "./number-links.js";
 import { spotDiffView, bindSpotDiff } from "./spot-diff.js";
+import { coloringView, bindColoring } from "./coloring.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -359,7 +360,7 @@ function selectView() {
     `<button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button>`,
     `<button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><span class="stage-number">こうえん</span><strong>コインさがし</strong><small>こうえんを たんけん</small></span></button>`,
     `<button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button>`,
-    `<button class="stage-card collection-category" data-go="collection"><span class="collection-menu-art" aria-hidden="true">🎁 ⭐ 🐰</span><span><span class="stage-number">コレクション</span><strong>たからもの</strong><small>あつめたものを みよう</small></span></button>`,
+    `<button class="stage-card coloring-category" data-go="coloring"><span class="coloring-menu-art" aria-hidden="true">◯ △ □</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
   ];
   const cards = categoryPage === 0
     ? [...core, `<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button>`, `<button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button>`]
@@ -464,6 +465,11 @@ function go(to, reason = "start") {
     cycleStage = data.stageProgress[progressKey()] || 1;
     body = spotDiffView(cycleStage);
   }
+  if (to === "coloring") {
+    cycleGame = "coloring";
+    cycleStage = data.stageProgress.coloring || 1;
+    body = coloringView(cycleStage);
+  }
   if (to === "result")
     body = `<main class="result-screen">${stageTop()}<h1 class="screen-title">いっぱい あそんだね！</h1><div class="result-art"><span class="big-star">✦</span>${friend("happy")}<span class="big-star">✦</span></div><span class="sticker">なかよし<br>スタンプ</span><p class="screen-note">きょう なかよくなった もじ</p><div class="collected-row">${[...sessionLetters].map((c) => `<span>${c}</span>`).join("")}</div><div class="actions"><button class="secondary" data-go="select">まだ あそぶ</button><button class="primary" data-go="home">ホームへ ${icon("arrow")}</button></div></main>`;
   if (to === "book")
@@ -481,6 +487,7 @@ function go(to, reason = "start") {
   }
   if (to === "number-link") experiment.start("number-link", `number-link-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "coloring") experiment.start("coloring", `coloring-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -554,6 +561,15 @@ function go(to, reason = "start") {
       onMistake: () => experiment.mistake(),
       onSuccess() { return award(); },
       onNext() { go("spot-diff"); },
+    });
+  if (to === "coloring")
+    cleanupExtra = bindColoring({
+      stage: cycleStage,
+      activate,
+      tone,
+      onSuccess: award,
+      onRetry() { go("coloring", "retry"); },
+      onNext(completedStage) { if (completedStage >= 3) go("select"); else go("coloring"); },
     });
   if (to === "maze")
     cleanupMaze = bindMaze({
