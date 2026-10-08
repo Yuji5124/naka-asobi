@@ -351,6 +351,7 @@ function actions(withNext = true) {
   return `<div class="actions play-actions"><button class="secondary" id="retry">${icon("back")}もういちど</button>${withNext ? `<button class="primary" id="next" hidden>${stage === 3 ? "できた！" : "つぎへ"} ${icon("arrow")}</button>` : ""}</div>`;
 }
 function selectView() {
+  const paintIcon = svg('<rect x="7" y="40" width="32" height="32" rx="6" fill="#f27b82"/><path d="M52 15 76 54H28Z" fill="#55b8e5"/><circle cx="77" cy="71" r="19" fill="#f5c84c"/>', "coloring-entry-icon");
   const core = labels.map((label, i) =>
     `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${label}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`,
   );
@@ -360,12 +361,12 @@ function selectView() {
     `<button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button>`,
     `<button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><span class="stage-number">こうえん</span><strong>コインさがし</strong><small>こうえんを たんけん</small></span></button>`,
     `<button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button>`,
-    `<button class="stage-card coloring-category" data-go="coloring"><span class="coloring-menu-art" aria-hidden="true">◯ △ □</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
+    `<button class="stage-card coloring-category" data-go="coloring"><span class="coloring-menu-art" aria-hidden="true">${paintIcon}</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
   ];
   const cards = categoryPage === 0
     ? [...core, `<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button>`, `<button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button>`]
     : extra;
-  return `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><nav class="category-pages" aria-label="あそびのページ"><button class="category-page ${categoryPage === 0 ? "active" : ""}" data-category-page="0" aria-current="${categoryPage === 0 ? "page" : "false"}"><b>1</b><span>もじ・かたち</span></button><button class="category-page ${categoryPage === 1 ? "active" : ""}" data-category-page="1" aria-current="${categoryPage === 1 ? "page" : "false"}"><b>2</b><span>もっと あそぶ</span></button></nav><div class="stage-grid">${cards.join("")}</div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+  return `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><nav class="category-pages" aria-label="あそびをえらぶ"><button class="coloring-shortcut" data-go="coloring">${paintIcon}<strong>いろぬり</strong></button><button class="category-page ${categoryPage === 0 ? "active" : ""}" data-category-page="0" aria-current="${categoryPage === 0 ? "page" : "false"}"><b>1</b><span>もじ・かたち</span></button><button class="category-page ${categoryPage === 1 ? "active" : ""}" data-category-page="1" aria-current="${categoryPage === 1 ? "page" : "false"}"><b>2</b><span>もっと あそぶ</span></button></nav><div class="stage-grid">${cards.join("")}</div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
 }
 
 function stageMenuView() {
@@ -1014,19 +1015,30 @@ function road(type) {
 }
 const goals = ["あ", "く", "ほ", "し", "つ", "へ"];
 function pathPlan() {
-  if (pathLevel === 2) {
-    const plans = [
-      { pieces: {4:"V",8:"H",9:"H",10:"V",14:"UR"}, route:[0,4,8,9,10,14,15] },
-      { pieces: {1:"H",2:"H",3:"V",7:"V",11:"V"}, route:[0,1,2,3,7,11,15] },
-      { pieces: {4:"V",8:"V",12:"UR",13:"H",14:"V"}, route:[0,4,8,12,13,14,15] },
-    ];
-    return plans[Math.min(2, cycleStage - 1)];
-  }
-  if (cycleStage === 3)
-    return { pieces:{3:"V",4:"H",5:"LD"}, route:[0,3,4,5,8] };
-  return variant % 2
-    ? { pieces:{3:"V",6:"UR",7:"H"}, route:[0,3,6,7,8] }
-    : { pieces:{1:"H",2:"LD",5:"V"}, route:[0,1,2,5,8] };
+  const size = pathLevel === 2 ? 4 : 3;
+  const routes = pathLevel === 2
+    ? [[0,4,8,9,10,14,15], [0,1,2,3,7,11,15], [0,4,8,12,13,14,15]]
+    : [[0,1,2,5,8], [0,3,6,7,8], [0,3,4,5,8]];
+  const route = routes[Math.min(2, Math.max(0, cycleStage - 1))];
+  // The visible road, answer and replay all use this same route. Derive each
+  // tile's two open edges from its neighbours instead of maintaining answers
+  // separately, which can mistakenly require a straight tile at a corner.
+  const connections = { LR: "H", DU: "V", DL: "LD", RU: "UR" };
+  const direction = (from, to) => {
+    const delta = to - from;
+    if (delta === -size) return "U";
+    if (delta === size) return "D";
+    if (delta === -1) return "L";
+    if (delta === 1) return "R";
+    throw new Error("Road route contains non-adjacent cells");
+  };
+  const pieces = Object.fromEntries(route.slice(1, -1).map((cell, i) => {
+    const edges = [direction(cell, route[i]), direction(cell, route[i + 2])].sort().join("");
+    const type = connections[edges];
+    if (!type) throw new Error(`Unsupported road edges: ${edges}`);
+    return [cell, type];
+  }));
+  return { route, pieces };
 }
 function pathView() {
   const c = goals[pathRound % goals.length];

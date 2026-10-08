@@ -75,6 +75,38 @@
   letter-spacing: .08em;
   text-shadow: 3px 4px 0 #f7d47d;
 }
+.coloring-menu-art svg { width: 100px; height: 100%; max-height: 110px; }
+.select-screen .category-pages {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  width: min(100%, 700px);
+  flex: 0 0 56px;
+  gap: 10px;
+}
+.select-screen .category-page { min-width: 0; padding: 5px 9px; }
+.coloring-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 4px 14px;
+  border: 3px solid #fff;
+  border-radius: 22px;
+  background: #fff0f2;
+  color: #a64f67;
+  box-shadow: 0 4px 0 #dfa7b6;
+}
+.coloring-shortcut strong { font-size: clamp(16px, 2.5vw, 22px); white-space: nowrap; }
+.coloring-shortcut svg { width: 42px; height: 42px; flex-shrink: 0; }
+.coloring-shortcut:active { transform: translateY(3px); box-shadow: 0 1px 0 #dfa7b6; }
+@media (max-width: 600px) {
+  .select-screen .category-pages { gap: 6px; margin: 10px auto; }
+  .select-screen .category-page { gap: 4px; padding: 4px; font-size: 11px; }
+  .select-screen .category-page b { width: 20px; height: 20px; flex-shrink: 0; }
+  .coloring-shortcut { gap: 3px; padding: 4px; border-radius: 18px; }
+  .coloring-shortcut svg { width: 30px; height: 30px; }
+}
 @keyframes paint-pop { 50% { transform: scale(1.1) rotate(-4deg); } }
 
 @media (min-width: 601px) and (orientation: portrait) {
