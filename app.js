@@ -25,6 +25,7 @@ import {
 } from "./shapes.js";
 import { numberLevelView, numberView, bindNumbers } from "./numbers.js";
 import { numberLinkView, bindNumberLinks } from "./number-links.js";
+import { spotDiffView, bindSpotDiff } from "./spot-diff.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -414,7 +415,7 @@ function go(to, reason = "start") {
   if (to === "home")
     body = `<main class="home">${homeSun()}<div class="home-heading"><h1><span class="rainbow"><i>ひ</i><i>な</i><i>あ</i><i>そ</i><i>び</i></span></h1><p class="eyebrow">さわって、ためして、できた！</p></div><div class="hero-art">${homeParty()}<span class="tiny-star">✦</span><span class="hero-small shi">し</span><div class="hero-circle"><button class="hero-letter" id="hero-letter" aria-label="あ であそぶ">${homeLetter(paths.あ)}</button></div><span class="hero-small tsu">つ</span><span class="tiny-star second">✦</span><div class="hero-friend">${friend()}</div><div class="hero-welcome">いっしょに<br>あそぼう！</div></div><button class="primary start-button" id="start">はじめる ${icon("arrow")}</button><p class="hero-sub">もじも かたちも あそぼう！</p><div class="home-bottom"><button class="book-link" data-go="book">${icon("book")}<span><strong>あいうえお ずかん</strong><small>${data.played.length} もじと なかよし</small></span></button><button class="parent-link" data-go="logs" aria-label="保護者用きろく">${svg('<path d="M50 10l12 24 27 4-20 20 5 28-24-13-24 13 5-28-20-20 27-4z" fill="#f7d97d" stroke="#d1b663" stroke-width="3"/>')}<span><strong>きろく</strong></span></button></div>${storageOK ? "" : storageNotice()}<p class="footer-note">きょうは、どの もじと あそぶ？</p></main>`;
   if (to === "select")
-    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button><button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button><button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
+    body = `<main class="select-screen"><h1 class="screen-title">なにして あそぶ？</h1><p class="screen-note">すきな あそびを えらんでね　${"★".repeat(data.totalPoints % 5)}${"☆".repeat(5-(data.totalPoints % 5))} あと ${5-(data.totalPoints % 5)}こ！</p><div class="stage-grid">${labels.map((l, i) => `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${l}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`).join("")}<button class="stage-card shape-category" data-go="shapes">${shapeCardArt()}<span><span class="stage-number">かたち</span><strong>かたち</strong><small>まわして あそぼう</small></span></button><button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button><button class="stage-card maze-category" data-go="maze">${mazeCardArt()}<span><span class="stage-number">めいろ</span><strong>めいろ</strong><small>ゴールまで たどろう</small></span></button><button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button><button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button><button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button></div><div class="select-friend"><div class="friend-mini">${friend()}</div>いっしょに あそぼう！</div></main>`;
   if (to === "select" && categoryPage === 1) categoryPage = 0;
   if (to === "stage-menu") body = stageMenuView();
   if (to === "connect-menu") body = `<main class="stage-menu connect-mode-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">つなぐ</span></div><h1 class="screen-title">どっちで あそぶ？</h1><div class="stage-choice-grid"><button class="stage-card" data-go="path-level">${stageArt(2)}<span><strong>みちを つなぐ</strong><small>みちを おいて ゴールへ</small></span></button><button class="stage-card" data-go="number-link"><span class="number-link-menu-art" aria-hidden="true">1　1</span><span><strong>すうじを つなぐ</strong><small>おなじ すうじを みつけよう</small></span></button></div></main>`;
@@ -442,6 +443,11 @@ function go(to, reason = "start") {
     cycleStage = data.stageProgress[progressKey()] || 1;
     body = numberLinkView(cycleStage);
   }
+  if (to === "spot-diff") {
+    cycleGame = "spot-diff";
+    cycleStage = data.stageProgress[progressKey()] || 1;
+    body = spotDiffView(cycleStage);
+  }
   if (to === "result")
     body = `<main class="result-screen">${stageTop()}<h1 class="screen-title">いっぱい あそんだね！</h1><div class="result-art"><span class="big-star">✦</span>${friend("happy")}<span class="big-star">✦</span></div><span class="sticker">なかよし<br>スタンプ</span><p class="screen-note">きょう なかよくなった もじ</p><div class="collected-row">${[...sessionLetters].map((c) => `<span>${c}</span>`).join("")}</div><div class="actions"><button class="secondary" data-go="select">まだ あそぶ</button><button class="primary" data-go="home">ホームへ ${icon("arrow")}</button></div></main>`;
   if (to === "book")
@@ -458,6 +464,7 @@ function go(to, reason = "start") {
     experiment.start("number", `number-L${numberLevel}-S${cycleStage}${numberLevel === 3 ? `-N${digit}` : ""}`, reason, { level: numberLevel, stage: cycleStage });
   }
   if (to === "number-link") experiment.start("number-link", `number-link-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
   if (to === "play") [bindFind, bindTrace, bindPath, bindWrite][stage]();
   if (to === "book") bindBook();
@@ -521,6 +528,16 @@ function go(to, reason = "start") {
       onSuccess() {
         if (!award()) go("number-link");
       },
+    });
+  if (to === "spot-diff")
+    bindSpotDiff({
+      stage: cycleStage,
+      activate,
+      tone,
+      message: sayFeedback,
+      onMistake: () => experiment.mistake(),
+      onSuccess() { return award(); },
+      onNext() { go("spot-diff"); },
     });
   if (to === "maze")
     cleanupMaze = bindMaze({
@@ -967,9 +984,9 @@ const goals = ["あ", "く", "ほ", "し", "つ", "へ"];
 function pathPlan() {
   if (pathLevel === 2) {
     const plans = [
-      { pieces: {4:"V",8:"V",9:"H",10:"H",14:"UR"}, route:[0,4,8,9,10,14,15] },
-      { pieces: {1:"H",2:"H",3:"LD",7:"V",11:"V"}, route:[0,1,2,3,7,11,15] },
-      { pieces: {4:"V",8:"V",12:"UR",13:"H",14:"H"}, route:[0,4,8,12,13,14,15] },
+      { pieces: {4:"V",8:"H",9:"H",10:"V",14:"UR"}, route:[0,4,8,9,10,14,15] },
+      { pieces: {1:"H",2:"H",3:"V",7:"V",11:"V"}, route:[0,1,2,3,7,11,15] },
+      { pieces: {4:"V",8:"V",12:"UR",13:"H",14:"V"}, route:[0,4,8,12,13,14,15] },
     ];
     return plans[Math.min(2, cycleStage - 1)];
   }
@@ -983,7 +1000,7 @@ function pathView() {
   const c = goals[pathRound % goals.length];
   const size = pathLevel === 2 ? 4 : 3, plan = pathPlan(), end = size*size-1;
   const initial = Math.abs(plan.route[1] - plan.route[0]) === 1 ? "H" : "V";
-  return `<div class="instruction"><h1 class="task-title">${words[c]}まで つなごう</h1><p class="screen-note">レベル ${pathLevel} · ステージ ${cycleStage}</p></div><div class="path-layout"><div class="puzzle-grid ${size===4?"grid-four":""}" id="puzzle-grid">${Array.from({ length: size*size }, (_, i) => (i === 0 ? `<div class="path-cell">${road(initial)}<span class="token">${c}</span></div>` : i === end ? `<div class="path-cell destination">${picture(c)}</div>` : plan.pieces[i] ? `<button class="path-cell empty" data-slot="${i}" aria-label="みちをおく"></button>` : `<div class="path-cell decoration">${svg('<path d="M30 70l5-16m10 19 7-18m10 18 5-16" stroke="#98c272" stroke-width="4" stroke-linecap="round"/>')}</div>`)).join("")}</div><div class="path-palette"><small>みちの パーツ</small>${["H","LD","V","UR"].map((t, i) => `<button data-piece="${t}" aria-label="${["よこみち", "まがりみち", "たてみち", "まがりみち"][i]}">${road(t)}</button>`).join("")}</div></div>${feedback("みちを はこんでね")}${actions()}`;
+  return `<div class="instruction"><h1 class="task-title">${words[c]}まで つなごう</h1><p class="screen-note">レベル ${pathLevel} · ステージ ${cycleStage}</p></div><div class="path-layout"><div class="puzzle-grid ${size===4?"grid-four":""}" id="puzzle-grid">${Array.from({ length: size*size }, (_, i) => (i === 0 ? `<div class="path-cell">${road(initial)}<span class="token">${c}</span></div>` : i === end ? `<div class="path-cell destination"><div class="goal-picture" aria-label="${words[c]}の え">${picture(c)}<small>${words[c]}</small></div></div>` : plan.pieces[i] ? `<button class="path-cell empty" data-slot="${i}" aria-label="みちをおく"></button>` : `<div class="path-cell decoration">${svg('<path d="M30 70l5-16m10 19 7-18m10 18 5-16" stroke="#98c272" stroke-width="4" stroke-linecap="round"/>')}</div>`)).join("")}</div><div class="path-palette"><small>みちの パーツ</small>${["H","LD","V","UR"].map((t, i) => `<button data-piece="${t}" aria-label="${["よこみち", "まがりみち", "たてみち", "まがりみち"][i]}">${road(t)}</button>`).join("")}</div></div>${feedback("みちを はこんでね")}${actions()}`;
 }
 function bindPath() {
   let selected = null,
@@ -1015,13 +1032,21 @@ function bindPath() {
         document.querySelector("#puzzle-grid").append(token);
         document.querySelector(".token").style.visibility = "hidden";
         let i = 0;
-        const size = pathLevel === 2 ? 4 : 3;
-        const points = plan.route.map((cell) => [((cell % size) / (size - 1))*92+4, (Math.floor(cell / size)/(size-1))*92+4]);
+        const grid = document.querySelector("#puzzle-grid");
+        const cells = [...grid.querySelectorAll(".path-cell")];
+        const tokenSize = cells[0].getBoundingClientRect().width * 0.62;
+        token.style.width = `${tokenSize}px`;
+        token.style.height = `${tokenSize}px`;
+        const points = plan.route.map((cell) => {
+          const gridRect = grid.getBoundingClientRect();
+          const rect = cells[cell].getBoundingClientRect();
+          return [rect.left - gridRect.left + rect.width / 2, rect.top - gridRect.top + rect.height / 2];
+        });
         const travel = () => {
           if (generation !== thisGeneration) return;
           if (i < points.length) {
-            token.style.left = points[i][0] + "%";
-            token.style.top = points[i][1] + "%";
+            token.style.left = points[i][0] + "px";
+            token.style.top = points[i][1] + "px";
             i++;
             setTimeout(travel, 320);
           } else {

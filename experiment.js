@@ -9,6 +9,7 @@ export const GAME_NAMES = {
   find2: "みつける2（こうえん）",
   number: "すうじ",
   "number-link": "すうじを つなぐ",
+  "spot-diff": "まちがいさがし",
   "coin-thief": "コインどろぼう！",
   crane: "クレーン",
 };

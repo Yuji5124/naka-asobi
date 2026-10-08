@@ -317,7 +317,7 @@ body[data-screen="shape-play"] {
     height: min(52svh, calc(100svh - 410px), 420px);
   }
   .shape-game.build .shape-world {
-    height: min(40svh, calc(100svh - 465px), 360px);
+    height: min(52svh, calc(100svh - 410px), 420px);
   }
   .shape-game.arrange .shape-world {
     height: min(42svh, calc(100svh - 410px), 350px);
@@ -432,7 +432,7 @@ body[data-screen="shape-play"] {
     height: 190px;
   }
   .shape-game.build .shape-world {
-    height: 170px;
+    height: 190px;
   }
   .shape-game .rotate-button {
     width: 48px;

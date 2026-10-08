@@ -36,7 +36,7 @@ export function numberLinkView(stage) {
   return `<main class="number-link-screen">
     <div class="stage-top"><button class="back" data-go="connect-menu" aria-label="つなぐあそびをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">すうじを つなごう</span></div>
     <div class="number-link-heading"><span aria-hidden="true">🖍️</span><div><p>ステージ ${stage}</p><h1>${title}</h1></div><span aria-hidden="true">✨</span></div>
-    <p class="number-link-instruction">${layout.instruction}</p>
+    <p class="number-link-instruction">${layout.instruction} ゆびで せんを ひこう！</p>
     <section class="number-paper" id="number-paper" aria-label="ちらばった すうじ">
       <svg class="number-lines" id="number-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><g id="finished-lines"></g><path id="preview-line" hidden /></svg>
       ${layout.numbers.map((dot) => `<button class="number-sticker number-${dot.value}" type="button" data-number-id="${dot.id}" data-value="${dot.value}" style="--x:${dot.x / 10}%;--y:${dot.y / 6}%" aria-label="すうじ ${dot.value}">${dot.value}</button>`).join("")}
@@ -70,10 +70,10 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
   function dotPoint(dot) {
     return { x: dot.x, y: dot.y };
   }
-  function setPreview(from, to) {
-    if (!from || !to) return;
-    preview.setAttribute("d", `M ${from.x} ${from.y} L ${to.x} ${to.y}`);
-    preview.setAttribute("stroke", lineColors[from.value]);
+  function setPreview(points, color) {
+    if (!points?.length) return;
+    preview.setAttribute("d", points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" "));
+    preview.setAttribute("stroke", lineColors[color]);
     preview.hidden = false;
   }
   function clearPreview() {
@@ -91,7 +91,7 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
     feedback.textContent = `「${dot.value}」を みつけたね！ おなじ すうじは どこかな？`;
     tone();
   }
-  function connect(a, b) {
+  function connect(a, b, points = [dotPoint(a), dotPoint(b)]) {
     if (done || !a || !b || a.id === b.id) return false;
     if (a.value !== b.value) {
       feedback.textContent = "おなじ すうじを さがそう！";
@@ -103,9 +103,9 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
       return false;
     }
     if (connected.has(a.value)) return false;
-    const p1 = dotPoint(a), p2 = dotPoint(b);
+    const linePoints = [...points, dotPoint(b)];
     const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    line.setAttribute("d", `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`);
+    line.setAttribute("d", linePoints.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" "));
     line.setAttribute("stroke", lineColors[a.value]);
     line.setAttribute("class", "completed-number-line");
     finished.append(line);
@@ -130,15 +130,18 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
     event.preventDefault();
     paper.setPointerCapture(event.pointerId);
     const dot = byId.get(button.dataset.numberId);
-    drag = { dot, from: dotPoint(dot), current: coordinates(event), moved: false };
-    setPreview(drag.from, drag.current);
+    drag = { dot, from: dotPoint(dot), current: coordinates(event), points: [dotPoint(dot)], moved: false };
+    setPreview(drag.points, dot.value);
   }
   function onPointerMove(event) {
     if (!drag) return;
     drag.current = coordinates(event);
+    const last = drag.points.at(-1);
+    if (!last || Math.hypot(drag.current.x - last.x, drag.current.y - last.y) > 3)
+      drag.points.push(drag.current);
     if (Math.hypot(drag.current.x - drag.from.x, drag.current.y - drag.from.y) > 14)
       drag.moved = true;
-    setPreview(drag.from, drag.current);
+    setPreview(drag.points, drag.dot.value);
   }
   function onPointerUp(event) {
     if (!drag) return;
@@ -148,20 +151,20 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
     const target = targetButton ? byId.get(targetButton.dataset.numberId) : null;
     clearPreview();
     ignoreClickUntil = Date.now() + 500;
-    if (current.moved) {
-      if (target) {
-        if (!connect(current.dot, target)) {
-          if (target.value === current.dot.value) select(current.dot);
-          else markSelected(current.dot);
-        }
-      } else select(current.dot);
+    if (!current.moved) {
+      select(current.dot);
+      feedback.textContent = "ゆびを はなさず、おなじ すうじまで なぞろう！";
       return;
     }
-    if (selected && selected.id !== current.dot.id) {
-      if (!connect(selected, current.dot)) {
-        if (selected.value === current.dot.value) select(current.dot);
+    if (target) {
+      if (!connect(current.dot, target, current.points)) {
+        if (target.value === current.dot.value) select(current.dot);
+        else markSelected(current.dot);
       }
-    } else select(current.dot);
+    } else {
+      select(current.dot);
+      feedback.textContent = "すうじから すうじまで なぞってね";
+    }
   }
   function onPointerCancel() {
     if (!drag) return;
@@ -175,9 +178,8 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
     const button = event.target.closest(".number-sticker");
     if (!button || button.classList.contains("matched")) return;
     const dot = byId.get(button.dataset.numberId);
-    if (selected && selected.id !== dot.id) {
-      if (!connect(selected, dot) && selected.value === dot.value) select(dot);
-    } else select(dot);
+    select(dot);
+    feedback.textContent = "ゆびで なぞって つなごう！";
   }
 
   paper.addEventListener("pointerdown", onPointerDown);

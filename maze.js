@@ -97,6 +97,27 @@ export function mazeModel(kind) {
     }
   const route = [];
   for (let n = goal; n; n = parents.get(n.id)) route.unshift(n);
+  // Trim roughly one fifth of terminal side passages while preserving the
+  // start-to-goal route, leaving fewer distracting dead ends for young players.
+  const routeIds = new Set(route.map((node) => node.id));
+  const originalNodeCount = nodes.length;
+  let removed = 0;
+  const targetRemoval = Math.floor(originalNodeCount * 0.2);
+  while (removed < targetRemoval) {
+    const degree = new Map(nodes.map((node) => [node.id, 0]));
+    for (const [a, b] of edges) {
+      degree.set(a.id, degree.get(a.id) + 1);
+      degree.set(b.id, degree.get(b.id) + 1);
+    }
+    const leaf = nodes.find((node) =>
+      !routeIds.has(node.id) && degree.get(node.id) === 1,
+    );
+    if (!leaf) break;
+    nodes.splice(nodes.indexOf(leaf), 1);
+    for (let i = edges.length - 1; i >= 0; i--)
+      if (edges[i][0].id === leaf.id || edges[i][1].id === leaf.id) edges.splice(i, 1);
+    removed++;
+  }
   return { nodes, edges, start, goal, route };
 }
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
