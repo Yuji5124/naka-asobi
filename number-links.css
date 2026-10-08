@@ -139,6 +139,20 @@
   .number-paper { width: 100%; height: min(51svh, 430px); min-height: 280px; border-radius: 20px; }
   .number-sticker { width: clamp(64px, 19vw, 82px); border-width: 4px; }
 }
+@media (min-width: 700px) and (orientation: landscape) and (max-height: 900px) {
+  .number-link-screen {
+    height: calc(100svh - 88px);
+    min-height: 0;
+    overflow: hidden;
+    padding: 7px 20px 9px;
+    gap: 6px;
+  }
+  .number-link-heading > span { font-size: clamp(1.5rem, 3.8vw, 2.2rem); }
+  .number-link-heading h1 { font-size: clamp(1.25rem, 2.6vw, 1.8rem); }
+  .number-link-instruction { padding: 5px 14px; font-size: clamp(.9rem, 2vw, 1.1rem); }
+  .number-paper { height: min(44svh, 350px); min-height: 0; flex: 1 1 auto; }
+  .number-link-feedback { min-height: 1.2em; }
+}
 @media (prefers-reduced-motion: reduce) {
   .number-link-screen *, .number-link-screen *::before, .number-link-screen *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

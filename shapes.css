@@ -659,6 +659,45 @@ body[data-screen="shape-play"] {
     height: 48px;
   }
 }
+
+@media (min-width: 601px) and (orientation: portrait) {
+  .shape-game {
+    width: min(100%, 1050px);
+    height: calc(100svh - 100px);
+    min-height: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 5px 18px 10px;
+    display: grid;
+    grid-template-columns: minmax(150px, 0.34fr) minmax(0, 1fr);
+    grid-template-rows: 48px 52px minmax(0, 1fr) 60px 66px;
+    gap: 6px 14px;
+  }
+  .shape-game .stage-top,
+  .shape-game > .task-title,
+  .shape-game > .feedback,
+  .shape-game > .shape-actions { grid-column: 1 / -1; }
+  .shape-game .stage-top { grid-row: 1; margin: 0; }
+  .shape-game > .task-title { grid-row: 2; margin: 0; font-size: clamp(22px, 3vw, 30px); }
+  .shape-game .shape-reference { grid-column: 1; grid-row: 3; min-height: 0; padding: 9px; }
+  .shape-game .shape-work { grid-column: 2; grid-row: 3; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+  .shape-game .shape-world { height: min(39svh, 400px); min-height: 0; flex: 0 1 auto; }
+  .shape-game.build .shape-world { height: min(37svh, 380px); }
+  .shape-game.arrange .shape-world { height: min(39svh, 400px); }
+  .shape-game #shape-model { height: min(28svh, 280px); }
+  .shape-game .rotation-controls { margin-top: 6px; gap: 8px; }
+  .shape-game .rotate-button { width: clamp(88px, 12vw, 130px); height: 64px; min-height: 64px; border-radius: 24px; display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 34px; }
+  .shape-game .rotate-button small { font-size: 14px; line-height: 1.1; }
+  .shape-game .rotation-hint { font-size: 13px; text-align: center; }
+  .shape-game .shape-tray { margin-top: 6px; gap: 7px; flex-wrap: nowrap; }
+  .shape-game .shape-piece { width: clamp(52px, 8vw, 74px); height: clamp(52px, 8vw, 74px); min-height: 0; padding: 2px; }
+  .shape-game .piece-turn { width: 54px; height: 54px; min-height: 54px; font-size: 29px; }
+  .shape-game > .feedback { grid-row: 4; margin: 0; min-height: 0; height: 60px; display: flex; align-items: center; justify-content: center; }
+  .shape-game > .feedback .friend-mini { width: 48px; height: 48px; }
+  .shape-game > .feedback .feedback-text { margin: 0; font-size: 18px; }
+  .shape-game > .shape-actions { grid-row: 5; margin: 0; justify-content: center; gap: 12px; }
+  .shape-game > .shape-actions button { min-height: 56px; padding: 8px 22px; }
+}
 .shape-world {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
