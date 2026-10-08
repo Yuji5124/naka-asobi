@@ -74,10 +74,12 @@ export function bindNumberLinks({ stage, activate, tone, onMistake, onSuccess })
     if (!points?.length) return;
     preview.setAttribute("d", points.map((p, i) => `${i ? "L" : "M"} ${p.x} ${p.y}`).join(" "));
     preview.setAttribute("stroke", lineColors[color]);
-    preview.hidden = false;
+    // SVGElement does not reflect the HTML `hidden` property, so remove the
+    // attribute explicitly to make the in-progress stroke visible.
+    preview.removeAttribute("hidden");
   }
   function clearPreview() {
-    preview.hidden = true;
+    preview.setAttribute("hidden", "");
     preview.removeAttribute("d");
   }
   function markSelected(dot) {
