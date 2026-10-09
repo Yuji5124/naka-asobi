@@ -2831,3 +2831,51 @@ body[data-screen="play"] {
     justify-content: center;
   }
 }
+
+@media (min-width: 900px) and (max-width: 1200px) and (orientation: landscape) {
+  .play-screen.stage-0 {
+    width: min(calc(100% - 24px), 1160px);
+    height: calc(100dvh - 100px);
+    min-height: 0;
+    grid-template-rows: 50px 58px minmax(0, 1fr) 64px 62px;
+    gap: 7px 12px;
+    padding: 0 18px 10px;
+    overflow: hidden;
+  }
+  .play-screen.stage-0 .instruction {
+    justify-self: center;
+  }
+  .play-screen.stage-0 .find-grid {
+    width: min(100%, 840px);
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .play-screen.stage-0 .letter-card {
+    width: 100%;
+    min-width: 0;
+    height: clamp(100px, 18svh, 138px);
+    padding: 0;
+    font-size: clamp(54px, 6vw, 72px);
+  }
+  .play-screen.stage-0 .find-progress {
+    margin-bottom: 3px;
+  }
+  .play-screen.stage-0 .feedback {
+    width: min(100%, 720px);
+    min-width: 0;
+    gap: 12px;
+  }
+  .play-screen.stage-0 .feedback-text {
+    overflow-wrap: anywhere;
+  }
+  .play-screen.stage-0 .play-actions {
+    min-width: 0;
+    justify-content: center;
+  }
+  .play-screen.stage-0 .play-actions button {
+    min-width: 180px;
+    height: 56px;
+  }
+}
