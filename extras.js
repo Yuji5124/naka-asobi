@@ -1,11 +1,22 @@
 import { escapeText } from "./experiment.js";
 export const PRIZES = [
-  ...[["dino","きょうりゅう","#8fc776","🦕"],["robot","ロボット","#89c9dc","🤖"],["firetruck","しょうぼうしゃ","#f08c72","🚒"],["police","パトカー","#8da8d7","🚓"],["train","でんしゃ","#edc85f","🚃"],["rocket","ロケット","#bc9ee0","🚀"],["camera","カメラ","#83c3b0","📷"],["chest","たからばこ","#d6a25f","🧰"],["crown","おうかん","#f1ca55","👑"],["ice","アイスクリーム","#f2a5c0","🍦"],["cake","ケーキ","#e999a5","🍰"],["balloon","ふうせん","#e78688","🎈"],["acorn","どんぐり","#bd955e","🌰"],["whale","くじら","#71bddd","🐳"],["penguin","ペンギン","#9cb9d0","🐧"],["frog","かえる","#8ecb73","🐸"],["cat","ねこ","#e5b27c","🐱"],["bear","くま","#c89470","🐻"],["ufo","UFO","#b49bda","🛸"],["game","ちいさな ゲームき","#75bdd2","🎮"]]
+  ...[["dino","きょうりゅう","#8fc776","🦕"],["robot","ロボット","#89c9dc","🤖"],["firetruck","しょうぼうしゃ","#f08c72","🚒"],["police","パトカー","#8da8d7","🚓"],["train","でんしゃ","#edc85f","🚃"],["rocket","ロケット","#bc9ee0","🚀"],["camera","カメラ","#83c3b0","📷"],["chest","たからばこ","#d6a25f","🧰"],["crown","おうかん","#f1ca55","👑"],["ice","アイスクリーム","#f2a5c0","🍦"],["cake","ケーキ","#e999a5","🍰"],["balloon","ふうせん","#e78688","🎈"],["acorn","どんぐり","#bd955e","🌰"],["whale","くじら","#71bddd","🐳"],["penguin","ペンギン","#9cb9d0","🐧"],["frog","かえる","#8ecb73","🐸"],["cat","ねこ","#e5b27c","🐱"],["bear","くま","#c89470","🐻"],["ufo","UFO","#b49bda","🛸"],["game","ちいさな ゲームき","#75bdd2","🎮"],
+    ["cloud-lantern","くもわたランタン","#a9dbea","☁️🏮"],
+    ["rainbow-seed","にじのたね","#f2bd78","🌈🌱"],
+    ["balloon-jelly","ふうせんクラゲ","#b9a8e8","🎈🪼"],
+    ["moon-post","つきのポスト","#829bd2","🌙📮"],
+    ["star-pebble","ほしのかけら","#d1b6ed","🪨✨"],
+    ["firework-dragon","はなびドラゴン","#ef9b88","🐉🎆"],
+    ["glimmer-shell","ぴかぴか貝がら","#83cfbd","🐚💫"],
+    ["cloud-pancake","ふわふわパンケーキ","#f1c875","☁️🥞"],
+    ["sun-musicbox","おひさまオルゴール","#f5cc57","☀️🎵"],
+    ["star-carousel","くるくる木馬","#df99b1","🎠⭐"]]
     .map(([id, name, color, icon]) => ({ id, name, color, icon, kind: "toy" })),
 ];
 export function prizeArt(id) {
   const p = PRIZES.find((p) => p.id === id) || PRIZES[0];
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="40" fill="${p.color}" stroke="#fff7df" stroke-width="5"/><text x="50" y="70" text-anchor="middle" font-size="57" font-family="system-ui, sans-serif">${p.icon || "🎁"}</text></svg>`;
+  const iconSize = [...p.icon].length > 2 ? 35 : [...p.icon].length > 1 ? 43 : 57;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="52" r="40" fill="${p.color}" stroke="#fff7df" stroke-width="5"/><text x="50" y="69" text-anchor="middle" font-size="${iconSize}" font-family="system-ui, sans-serif">${p.icon || "🎁"}</text></svg>`;
 }
 export function extraCardArt(kind) {
   return kind === "park"
