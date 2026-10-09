@@ -362,7 +362,6 @@ function selectView() {
     `<button class="stage-card color-${i}" data-stage="${i}">${stageArt(i)}<span><span class="stage-number">あそび ${i + 1}</span><strong>${label}</strong><small>${["おなじ もじは どこ？", "ゆびで すーっと", "みちを つくろう", "かいた もじが うごくよ"][i]}</small></span><span class="arrow">›</span></button>`,
   );
   const extra = [
-    `<button class="stage-card shape-category" data-shape-shortcut="build">${shapeCardArt()}<span><span class="stage-number">つみき</span><strong>つむ</strong><small>つみきを はこぼう</small></span></button>`,
     `<button class="stage-card number-category" data-go="number-levels"><span class="number-level-art" aria-hidden="true">123</span><span><span class="stage-number">すうじ</span><strong>すうじ</strong><small>みて、かぞえて、かこう</small></span></button>`,
     `<button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button>`,
     `<button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><span class="stage-number">こうえん</span><strong>コインさがし</strong><small>こうえんを たんけん</small></span></button>`,

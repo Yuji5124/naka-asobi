@@ -1,7 +1,5 @@
-// A quiet original pentatonic music-box loop. No speech or remote audio.
+// Shared synthesized sound effects; no background music or speech.
 let context,
-  timer,
-  index = 0,
   enabled = true;
 function note(freq, start, length = 0.18, gain = 0.045) {
   const o = context.createOscillator(),
@@ -16,25 +14,32 @@ function note(freq, start, length = 0.18, gain = 0.045) {
   o.start(start);
   o.stop(start + length);
 }
-const tune = [
-  523, 659, 784, 659, 587, 0, 659, 523, 440, 523, 659, 0, 587, 659, 523, 0,
-];
-function music() {
-  if (!enabled || document.hidden || !context) return;
-  const n = tune[index++ % tune.length];
-  if (n) note(n, context.currentTime, 0.32, 0.018);
+function clap(start, strength = 1) {
+  const buffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.11), context.sampleRate);
+  const channel = buffer.getChannelData(0);
+  for (let i = 0; i < channel.length; i++) channel[i] = (Math.random() * 2 - 1) * (1 - i / channel.length);
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+  source.buffer = buffer;
+  filter.type = "highpass";
+  filter.frequency.value = 900;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.08 * strength, start + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.105);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(context.destination);
+  source.start(start);
 }
 export function sound(success = false) {
   if (!enabled || document.hidden) return;
   try {
     context ||= new (window.AudioContext || window.webkitAudioContext)();
     context.resume().catch(() => {});
-    if (!timer) {
-      music();
-      timer = setInterval(music, 420);
-    }
     const now = context.currentTime;
-    if (success === "crane-start") [523, 659, 784, 988].forEach((f, i) => note(f, now + i * 0.12, 0.2, 0.05));
+    if (success === "applause") [0, 0.16, 0.34, 0.53].forEach((delay, i) => clap(now + delay, i === 3 ? 0.8 : 1));
+    else if (success === "crane-start") [523, 659, 784, 988].forEach((f, i) => note(f, now + i * 0.12, 0.2, 0.05));
     else if (success === "crane-down") [440, 392, 349].forEach((f, i) => note(f, now + i * 0.14, 0.16, 0.035));
     else if (success === "bell") [988, 1318].forEach((f, i) => note(f, now + i * 0.08, 0.24, 0.035));
     else if (success === "coin-clink") [784, 988, 1318].forEach((f, i) => note(f, now + i * 0.075, 0.16, 0.03));
@@ -49,16 +54,8 @@ export function sound(success = false) {
 }
 export function setSound(value) {
   enabled = value;
-  if (!enabled) {
-    clearInterval(timer);
-    timer = null;
-    context?.suspend().catch(() => {});
-  } else if (context) sound();
+  if (!enabled) context?.suspend().catch(() => {});
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    clearInterval(timer);
-    timer = null;
-    context?.suspend().catch(() => {});
-  } else if (enabled && context) sound();
+  if (document.hidden) context?.suspend().catch(() => {});
 });

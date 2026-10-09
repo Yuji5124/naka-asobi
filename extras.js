@@ -84,7 +84,7 @@ export function rewardView(data) {
   const unlocked = data.totalPoints >= 5,
     canPlay = unlocked && data.coinBalance > 0;
   const display = [...PRIZES].sort(() => Math.random() - 0.5).slice(0, 4);
-  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${display.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${[15,38,61,84][i]}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
+  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="coin-slot" aria-hidden="true">🪙<small>コイン</small></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${display.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${[15,38,61,84][i]}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
 }
 export function collectionView(data) {
   return `<main class="collection-screen"><div class="stage-top"><button class="back" data-go="reward">‹</button><span class="stage-label">たからもの</span></div><h1 class="screen-title">あつめた たからもの</h1><div class="treasure-grid">${
@@ -117,10 +117,28 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
     start.hidden = true;
     document.querySelector(".crane-start").hidden = true;
     document.querySelector(".crane-machine").classList.add("reward-ready");
-    controls.hidden = false;
+    controls.hidden = true;
     result.classList.remove("prize-won");
-    result.textContent = "よこに うごかして とる！";
+    result.textContent = "コインを いれるよ！";
+    const machine = document.querySelector(".crane-machine");
+    machine.classList.add("coin-inserting");
+    const coin = document.createElement("span");
+    coin.className = "coin-insert-fly";
+    coin.textContent = "🪙";
+    machine.append(coin);
+    const coinStart = coin.getBoundingClientRect();
+    const slot = machine.querySelector(".coin-slot").getBoundingClientRect();
+    coin.style.setProperty("--insert-x", `${slot.left + slot.width / 2 - coinStart.left - coinStart.width / 2}px`);
+    coin.style.setProperty("--insert-y", `${slot.top + slot.height / 2 - coinStart.top - coinStart.height / 2}px`);
+    requestAnimationFrame(() => coin.classList.add("dropping"));
     tone("crane-start");
+    timers.push(setTimeout(() => {
+      if (!alive) return;
+      coin.remove();
+      machine.classList.remove("coin-inserting");
+      controls.hidden = false;
+      result.textContent = "よこに うごかして とる！";
+    }, 720));
   });
   document.querySelector("#crane-position").oninput = (e) => {
     if (busy) return;

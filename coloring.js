@@ -22,11 +22,11 @@ function shapeSvg(shape, fill) {
 }
 
 export function coloringLevelView() {
-  return `<main class="stage-menu coloring-levels"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">いろぬり</span></div><h1 class="screen-title">どうやって ぬる？</h1><div class="stage-choice-grid">${[1,2].map((level) => `<button class="stage-card" data-level-game="coloring" data-level="${level}"><div class="coloring-level-art" aria-hidden="true">${level === 1 ? "👆 ●" : "🖍️ ◯"}</div><span><strong>レベル ${level}</strong><small>${level === 1 ? "タッチで ぬる" : "ペンで ぐりぐり"} · 3ステージ</small></span></button>`).join("")}</div></main>`;
+  return `<main class="stage-menu coloring-levels"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">いろぬり</span></div><h1 class="screen-title">どうやって ぬる？</h1><div class="stage-choice-grid">${[1,2,3].map((level) => `<button class="stage-card" data-level-game="coloring" data-level="${level}"><div class="coloring-level-art" aria-hidden="true">${["👆 ●", "🖍️ ◯", "🖍️ △☆"][level - 1]}</div><span><strong>レベル ${level}</strong><small>${["タッチで ぬる", "ペンで ぐりぐり", "いろんな かたちを ぬろう"][level - 1]} · 3ステージ</small></span></button>`).join("")}</div></main>`;
 }
 
 export function coloringView(stage, level = 1) {
-  if (level === 2) return freePaintView(stage);
+  if (level >= 2) return freePaintView(stage, level);
   const round = rounds[stage] || rounds[1];
   return `<main class="coloring-screen">
     <div class="stage-top"><button class="back" data-go="coloring-levels" aria-label="レベルをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">いろぬり · レベル ${level} · ${stage}/3</span></div>
@@ -40,7 +40,7 @@ export function coloringView(stage, level = 1) {
 }
 
 export function bindColoring(options) {
-  if (options.level === 2) return bindFreePaint(options);
+  if (options.level >= 2) return bindFreePaint(options);
   const { stage, activate, tone, onSuccess, onNext, onRetry } = options;
   const round = rounds[stage] || rounds[1];
   const selected = round.colors[0];
@@ -83,19 +83,24 @@ export function bindColoring(options) {
   activate(document.querySelector("#coloring-next"), () => onNext(stage));
 }
 
+const shapeHitContext = document.createElement("canvas").getContext("2d");
+const pathContains = (d) => { const p = new Path2D(d); return (x,y) => shapeHitContext.isPointInPath(p,x,y); };
 const freeShapes = [
   { name: "まる", path: "M350 200 A150 150 0 1 1 50 200 A150 150 0 1 1 350 200Z", inside: (x,y) => Math.hypot(x-200,y-200) < 140 },
   { name: "しかく", path: "M50 50H350V350H50Z", inside: (x,y) => x>60 && x<340 && y>60 && y<340 },
   { name: "さんかく", path: "M200 40L355 350H45Z", inside: (x,y) => y>60 && y<338 && Math.abs(x-200) < (y-40)/2-10 },
+  { name: "ほし", path: "M200 28L244 145L370 150L272 228L305 355L200 283L95 355L128 228L30 150L156 145Z", inside: (x,y) => { const poly=[[200,35],[245,145],[365,150],[275,225],[305,350],[200,285],[95,350],[125,225],[35,150],[155,145]]; let inside=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [xi,yi]=poly[i],[xj,yj]=poly[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)inside=!inside;} return inside; } },
+  { name: "ハート", path: "M200 350C160 310 45 225 45 135C45 55 145 45 200 112C255 45 355 55 355 135C355 225 240 310 200 350Z", inside: pathContains("M200 350C160 310 45 225 45 135C45 55 145 45 200 112C255 45 355 55 355 135C355 225 240 310 200 350Z") },
+  { name: "おはな", path: "M200 48C244 48 250 83 246 105C268 86 301 73 329 101C357 129 344 161 322 176C351 180 372 205 357 242C342 279 308 275 282 261C295 288 287 322 250 335C213 348 192 322 184 294C170 323 137 339 107 313C77 287 91 254 109 230C79 239 49 220 51 182C53 144 85 132 115 139C92 116 95 82 130 65C165 48 189 70 200 98Z", inside: pathContains("M200 48C244 48 250 83 246 105C268 86 301 73 329 101C357 129 344 161 322 176C351 180 372 205 357 242C342 279 308 275 282 261C295 288 287 322 250 335C213 348 192 322 184 294C170 323 137 339 107 313C77 287 91 254 109 230C79 239 49 220 51 182C53 144 85 132 115 139C92 116 95 82 130 65C165 48 189 70 200 98Z") },
 ];
 
-function freePaintView(stage) {
-  const shape = freeShapes[stage - 1];
+function freePaintView(stage, level = 2) {
+  const shape = (level === 3 ? freeShapes.slice(3) : freeShapes.slice(0,3))[stage - 1];
   return `<main class="coloring-screen freepaint-screen">
-    <div class="stage-top"><button class="back" data-go="coloring-levels" aria-label="レベルをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">いろぬり · レベル2 · ${stage}/3</span></div>
+    <div class="stage-top"><button class="back" data-go="coloring-levels" aria-label="レベルをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">いろぬり · レベル${level} · ${stage}/3</span></div>
     <h1 class="screen-title">${shape.name}を ぐりぐり ぬろう</h1>
     <p class="screen-note">ペンや ゆびを うごかして ぬってね</p>
-    <div class="coloring-palette" role="group" aria-label="ぬる いろ">${palette.slice(0,stage).map((color,i) => `<button class="color-swatch ${i === 0 ? "selected" : ""}" data-color="${color.id}" style="--paint:${color.color}" aria-label="${color.name}" aria-pressed="${i === 0}"><span>●</span><small>${color.name}</small></button>`).join("")}</div>
+    <div class="coloring-palette" role="group" aria-label="ぬる いろ">${(level === 3 ? palette : palette.slice(0,stage)).map((color,i) => `<button class="color-swatch ${i === 0 ? "selected" : ""}" data-color="${color.id}" style="--paint:${color.color}" aria-label="${color.name}" aria-pressed="${i === 0}"><span>●</span><small>${color.name}</small></button>`).join("")}</div>
     <div class="coloring-board freepaint-board"><div class="freepaint-area"><canvas id="freepaint-canvas" aria-label="${shape.name}にペンやゆびでいろをぬる"></canvas><svg viewBox="0 0 400 400" aria-hidden="true"><path d="${shape.path}" fill="none" stroke="#8c704b" stroke-width="6" stroke-linejoin="round"/></svg></div></div>
     <div class="freepaint-meter"><span>ぬれたよ</span><progress id="freepaint-progress" max="65" value="0" aria-label="ぬれたところ"></progress></div>
     <div class="coloring-message" id="coloring-message" role="status" aria-live="polite">ぐりぐり ぬってみよう！</div>
@@ -103,10 +108,10 @@ function freePaintView(stage) {
   </main>`;
 }
 
-function bindFreePaint({ stage, activate, tone, onSuccess, onNext, onRetry }) {
+function bindFreePaint({ stage, level = 2, activate, tone, onSuccess, onNext, onRetry }) {
   const canvas = document.querySelector("#freepaint-canvas");
   const ctx = canvas.getContext("2d");
-  const shape = freeShapes[stage - 1];
+  const shape = (level === 3 ? freeShapes.slice(3) : freeShapes.slice(0,3))[stage - 1];
   const path = new Path2D(shape.path);
   canvas.width = canvas.height = 800;
   ctx.scale(2,2);

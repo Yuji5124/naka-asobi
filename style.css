@@ -2802,3 +2802,32 @@ body[data-screen="play"] {
     height: 50px;
   }
 }
+
+/* Keep the find prompt precisely centered on iPad Air landscape. */
+@media (min-width: 900px) and (max-width: 1200px) and (orientation: landscape) {
+  .play-screen.stage-0 .instruction {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 84px max-content;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    gap: 16px;
+  }
+  .play-screen.stage-0 .instruction .target {
+    width: 78px;
+    min-width: 78px;
+    margin: 0;
+    justify-self: center;
+  }
+  .play-screen.stage-0 .task-title {
+    width: max-content;
+    text-align: center;
+    justify-self: center;
+    padding: 0;
+  }
+  .play-screen.stage-0 .feedback {
+    max-width: 100%;
+    justify-content: center;
+  }
+}

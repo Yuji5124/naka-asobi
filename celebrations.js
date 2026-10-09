@@ -32,7 +32,7 @@ export function celebrate(result, tone, onCoinArrive = () => {}) {
       `<div class="stamp-sparkles" aria-hidden="true">${Array.from({ length: 6 }, (_, i) => `<i style="--s:${i}">✦</i>`).join("")}</div>`,
     );
   document.body.append(el);
-  tone(true);
+  tone(result.effect === "fireworks" ? true : "applause");
   if (result.effect === "fireworks" && !reduced)
     [220, 570, 920, 1280].forEach((t) =>
       timers.push(setTimeout(() => tone(true), t)),
