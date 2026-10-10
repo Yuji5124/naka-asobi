@@ -28,6 +28,7 @@ import { numberLinkLevelView, numberLinkView, bindNumberLinks } from "./number-l
 import { spotDiffView, bindSpotDiff } from "./spot-diff.js";
 import { ropeMenuView, ropeView, bindRope } from "./rope-trace.js";
 import { coloringLevelView, coloringView, bindColoring } from "./coloring.js";
+import { memoryView, bindMemory } from "./memory.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -366,6 +367,7 @@ function selectView() {
     `<button class="stage-card spot-category" data-go="spot-diff"><span class="spot-menu-art" aria-hidden="true">🌳　🔎　🌳</span><span><span class="stage-number">あたらしい あそび</span><strong>まちがいさがし</strong><small>2つの えを くらべよう</small></span></button>`,
     `<button class="stage-card park-category" data-go="park-menu">${extraCardArt("park")}<span><span class="stage-number">こうえん</span><strong>コインさがし</strong><small>こうえんを たんけん</small></span></button>`,
     `<button class="stage-card reward-category" data-go="reward">${extraCardArt("crane")}<span><span class="stage-number">ごほうび</span><strong>ごほうび</strong><small>クレーンで あそぼう</small></span></button>`,
+    `<button class="stage-card memory-category" data-go="memory"><span class="memory-menu-art" aria-hidden="true">🌷 🌼 🌸</span><span><span class="stage-number">おはな</span><strong>おぼえる</strong><small>じゅんばんを おぼえよう</small></span></button>`,
     `<button class="stage-card coloring-category" data-go="coloring-levels"><span class="coloring-menu-art" aria-hidden="true">${paintIcon}</span><span><span class="stage-number">いろあそび</span><strong>いろぬり</strong><small>かたちに いろを ぬろう</small></span></button>`,
   ];
   const cards = categoryPage === 0
@@ -447,6 +449,7 @@ function go(to, reason = "start") {
   if (to === "number-levels") body = numberLevelView();
   if (to === "number-link-levels") body = numberLinkLevelView();
   if (to === "coloring-levels") body = coloringLevelView();
+  if (to === "memory") { cycleGame = "memory"; cycleStage = data.stageProgress.memory || 1; body = memoryView(cycleStage); }
   if (to === "path-level" || to === "maze-level") {
     const path = to === "path-level";
     body = `<main class="stage-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">${path ? "つなぐ" : "めいろ"}</span></div><h1 class="screen-title">レベルを えらぼう</h1><div class="stage-choice-grid">${[1,2].map((n) => `<button class="stage-card" data-level="${n}" data-level-game="${path ? "path" : "maze"}">${path ? stageArt(2) : mazeCardArt()}<span><strong>レベル ${n}</strong><small>${path ? n === 1 ? "3 × 3" : "4 × 4" : n === 1 ? "いつもの めいろ" : "ひろい めいろ"}</small></span></button>`).join("")}</div></main>`;
@@ -498,6 +501,7 @@ function go(to, reason = "start") {
   }
   if (to === "number-link") experiment.start("number-link", numberLinkLevel === 1 ? `number-link-S${cycleStage}` : `number-link-L${numberLinkLevel}-S${cycleStage}`, reason, { level: numberLinkLevel, stage: cycleStage });
   if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "memory") experiment.start("memory", `memory-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   if (to === "coloring") experiment.start("coloring", coloringLevel === 1 ? `coloring-S${cycleStage}` : `coloring-L${coloringLevel}-S${cycleStage}`, reason, { level: coloringLevel, stage: cycleStage });
   if (to === "rope-trace") experiment.start("rope-trace", `rope-trace-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
@@ -577,6 +581,8 @@ function go(to, reason = "start") {
       onSuccess() { return award(); },
       onNext() { go("spot-diff"); },
     });
+  if (to === "memory")
+    cleanupExtra = bindMemory({ stage: cycleStage, activate, tone, onMistake: () => experiment.mistake(), onSuccess: award, onNext(completedStage) { if (completedStage >= 3) go("select"); else go("memory"); } });
   if (to === "coloring")
     cleanupExtra = bindColoring({
       stage: cycleStage,

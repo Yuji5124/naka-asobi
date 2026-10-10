@@ -3,6 +3,7 @@ export const GAME_NAMES = {
   find: "みつける",
   trace: "なぞる",
   "rope-trace": "なぞって くじびき",
+  memory: "おぼえる",
   path: "つなぐ",
   write: "かく",
   shape: "かたち",
