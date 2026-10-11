@@ -4,6 +4,7 @@ export const GAME_NAMES = {
   trace: "なぞる",
   "rope-trace": "なぞって くじびき",
   memory: "おぼえる",
+  "ball-drop": "ころころボール",
   path: "つなぐ",
   write: "かく",
   shape: "かたち",
