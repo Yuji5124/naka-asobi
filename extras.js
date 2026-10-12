@@ -10,7 +10,37 @@ export const PRIZES = [
     ["glimmer-shell","ぴかぴか貝がら","#83cfbd","🐚💫"],
     ["cloud-pancake","ふわふわパンケーキ","#f1c875","☁️🥞"],
     ["sun-musicbox","おひさまオルゴール","#f5cc57","☀️🎵"],
-    ["star-carousel","くるくる木馬","#df99b1","🎠⭐"]]
+    ["star-carousel","くるくる木馬","#df99b1","🎠⭐"],
+    ["moon-rabbit-teapot","つきうさぎのポット","#a8c8e8","🐇🫖"],
+    ["cloud-whale-ship","くものくじらせん","#91d7e8","🐋⛵"],
+    ["rainbow-snail","にじいろかたつむり","#f0ad78","🐌🌈"],
+    ["pudding-planet","ぷりんわくせい","#f3ca62","🪐🍮"],
+    ["starlight-kettle","ほしあかりやかん","#b49de0","🫖✨"],
+    ["moss-turtle-clock","こけのかめどけい","#83bd86","🐢⏰"],
+    ["bubble-tea-rocket","しゃぼんだまロケット","#f099b8","🧋🚀"],
+    ["dream-fish-bag","ゆめみるさかなぶくろ","#77c7d5","🐠💤"],
+    ["candy-castle-key","おかしのおしろのかぎ","#e6a0c8","🍬🗝️"],
+    ["little-comet-lantern","こぼしぼしランタン","#f4bd58","☄️🏮"],
+    ["flower-cloud-camera","おはなぐもカメラ","#a6d7ae","🌼📸"],
+    ["jellyfish-parasol","くらげパラソル","#a99be2","🪼☂️"],
+    ["pocket-volcano","ポケットかざん","#ec8d70","🌋👝"],
+    ["snow-globe-island","ゆきのしまスノードーム","#9ccfe0","🏝️❄️"],
+    ["acorn-submarine","どんぐりせんすいかん","#b89162","🌰🤿"],
+    ["sleepy-star-pillow","おやすみほしまくら","#b5a1e3","⭐🛏️"],
+    ["tea-cup-garden","ティーカップはなばたけ","#e9a9aa","☕🌷"],
+    ["crystal-melon","きらきらメロン","#8fce9a","🍈💎"],
+    ["wind-up-cloud","ぜんまいぐも","#a9d7e9","☁️🗝️"],
+    ["little-planet-postbox","こぐまわくせいポスト","#ed9d7e","🪐📮"],
+    ["butterfly-music-bottle","ちょうちょのおとびん","#c59fe2","🦋🧴"],
+    ["rainy-day-pancake","あめふりパンケーキ","#eabf77","🌧️🥞"],
+    ["coral-castanet","さんごのカスタネット","#f18d8c","🪸🎶"],
+    ["tiny-forest-train","ちいさなもりのでんしゃ","#88bd82","🌲🚂"],
+    ["moon-melon-basket","つきメロンのかご","#b3a5dc","🌙🧺"],
+    ["starfish-mailbox","ひとでのおてがみばこ","#f1a27e","⭐📫"],
+    ["bubblegum-hot-air-balloon","ふうせんガムききゅう","#ef91b1","🫧🎈"],
+    ["rainbow-shell-phone","にじがらでんわ","#8dcfc2","🐚📞"],
+    ["sleepy-volcano-cup","ねむねむかざんカップ","#d9947f","🌋☕"],
+    ["moonlight-mushroom-lamp","つきよのきのこランプ","#a894d7","🍄💡"]]
     .map(([id, name, color, icon]) => ({ id, name, color, icon, kind: "toy" })),
 ];
 export function prizeArt(id) {
@@ -95,7 +125,12 @@ export function rewardView(data) {
   const unlocked = data.totalPoints >= 5,
     canPlay = unlocked && data.coinBalance > 0;
   const display = [...PRIZES].sort(() => Math.random() - 0.5).slice(0, 4);
-  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="coin-slot" aria-hidden="true">🪙<small>コイン</small></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${display.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${[15,38,61,84][i]}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
+  return `<main class="reward-screen"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの クレーン</h1><p class="screen-note" id="reward-message">${canPlay ? "クレーンゲームで あそべるよ！" : unlocked ? "コインを あつめて また あそぼう！" : `あと ${5 - data.totalPoints}ポイントで あそべるよ！`}</p><div class="crane-machine"><div class="crane-rail"></div><div class="coin-slot" aria-hidden="true">🪙<small>コイン</small></div><div class="claw" id="crane-claw" style="left:50%"><div class="claw-rope"></div><div class="claw-fingers"><svg viewBox="0 0 80 65" aria-hidden="true"><rect x="25" y="3" width="30" height="17" rx="8" fill="#e39bb2"/><path d="M28 17L13 39Q9 54 25 57M52 17L67 39Q71 54 55 57M40 20V42" fill="none" stroke="#8ca5ac" stroke-width="8" stroke-linecap="round"/></svg></div></div><div class="crane-prizes">${display.map((p, i) => `<div class="machine-prize" data-prize="${p.id}" style="left:${[15,38,61,84][i]}%">${prizeArt(p.id)}</div>`).join("")}</div><div class="crane-result" id="crane-result" role="status"></div></div><div class="crane-start"><button class="primary" id="crane-start" ${canPlay ? "" : "disabled"}>🪙 1まいで あそぶ</button><small>5ポイントで コイン1まい。1かい 1まい。</small></div><div class="crane-controls" id="crane-controls" hidden><label>よこに うごかそう<input type="range" min="5" max="95" value="50" id="crane-position" aria-label="クレーンをよこにうごかす" /></label><button class="primary" id="crane-take">とる！</button></div><div class="actions"><button class="secondary" data-go="gashapon">🎁 ガシャポン</button><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="select">あそびに もどる</button></div></main>`;
+}
+export function gashaponView(data) {
+  const canPlay = data.totalPoints >= 5 && data.coinBalance > 0;
+  const message = canPlay ? "コイン1まいで ガシャポンを まわそう！" : data.totalPoints < 5 ? `あと ${5 - data.totalPoints}ポイントで あそべるよ！` : "コインを あつめて また あそぼう！";
+  return `<main class="gashapon-screen"><div class="stage-top"><button class="back" data-go="reward" aria-label="ごほうびへ もどる">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの ガシャポン</h1><p class="screen-note" id="gashapon-message" role="status" aria-live="polite">${message}</p><div class="gashapon-machine" id="gashapon-machine"><div class="gashapon-top"><div class="gashapon-globe"><div class="gashapon-capsules">🟡 🔴 🔵 🟣</div><div class="gashapon-sticker">なにが<br>でるかな？</div></div><div class="gashapon-body"><div class="gashapon-knob">✿</div><div class="gashapon-slot">カプセルの でぐち</div></div><div class="gashapon-tray"></div><div class="gashapon-capsule" id="gashapon-capsule" aria-hidden="true"><span class="capsule-top"></span><span class="capsule-bottom"></span><span class="capsule-prize" id="gashapon-prize"></span></div><div class="gashapon-coin" id="gashapon-coin">🪙</div></div><button class="primary gashapon-start" id="gashapon-start" ${canPlay ? "" : "disabled"}>🪙 1まいで まわす</button><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="reward">クレーンで あそぶ</button></div></main>`;
 }
 export function collectionView(data) {
   return `<main class="collection-screen"><div class="stage-top"><button class="back" data-go="reward">‹</button><span class="stage-label">たからもの</span></div><h1 class="screen-title">あつめた たからもの</h1><div class="treasure-grid">${
@@ -225,6 +260,77 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
         refresh();
       }, 1800),
     );
+  });
+  return () => {
+    alive = false;
+    timers.forEach(clearTimeout);
+  };
+}
+
+export function bindGashapon({ data, experiment, activate, tone, refresh, celebratePrize = () => {} }) {
+  let busy = false;
+  let alive = true;
+  const timers = [];
+  const machine = document.querySelector("#gashapon-machine");
+  const button = document.querySelector("#gashapon-start");
+  const capsule = document.querySelector("#gashapon-capsule");
+  const prizeBox = document.querySelector("#gashapon-prize");
+  const message = document.querySelector("#gashapon-message");
+  activate(button, () => {
+    if (busy || data.totalPoints < 5 || data.coinBalance < 1) return;
+    experiment.start("gashapon", "gashapon-01");
+    if (!experiment.spend("gashapon")) {
+      experiment.finish("insufficient-coins");
+      return;
+    }
+    busy = true;
+    button.disabled = true;
+    button.textContent = "ガラガラ… なにが でるかな？";
+    message.textContent = "コインを いれて… ガラガラ！";
+    machine.classList.remove("gashapon-running", "gashapon-shaking");
+    capsule.className = "gashapon-capsule";
+    prizeBox.replaceChildren();
+    const coin = document.querySelector("#gashapon-coin");
+    coin.classList.remove("gashapon-coin-drop");
+    void machine.offsetWidth;
+    machine.classList.add("gashapon-running");
+    coin.classList.add("gashapon-coin-drop");
+    tone("crane-start");
+    timers.push(setTimeout(() => {
+      if (!alive) return;
+      tone("gashapon-spin");
+      machine.classList.add("gashapon-shaking");
+      message.textContent = "カプセルが でてくるよ！";
+    }, 850));
+    timers.push(setTimeout(() => {
+      if (!alive) return;
+      machine.classList.remove("gashapon-shaking");
+      capsule.classList.add("capsule-out");
+      tone("coin-clink");
+    }, 2850));
+    timers.push(setTimeout(() => {
+      if (!alive) return;
+      capsule.classList.add("capsule-opening");
+      message.textContent = "カプセルが パカッ！";
+      tone(true);
+    }, 4050));
+    timers.push(setTimeout(() => {
+      if (!alive) return;
+      const prize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
+      experiment.prize(prize.id);
+      experiment.complete({ awardPoint: false });
+      experiment.finish("capsule");
+      prizeBox.innerHTML = prizeArt(prize.id);
+      capsule.classList.add("capsule-revealed");
+      message.textContent = `${prize.name}が でたよ！`;
+      machine.classList.remove("gashapon-running");
+      celebratePrize();
+      tone(true);
+      button.textContent = "🪙 1まいで もういちど";
+      button.disabled = data.coinBalance < 1;
+      busy = false;
+      refresh();
+    }, 5000));
   });
   return () => {
     alive = false;

@@ -3,3 +3,4 @@
 .ball-menu-art{min-height:104px;display:grid;place-items:center;font-size:clamp(27px,4vw,42px);white-space:nowrap}
 
 #app.ball-drop-layout{height:100svh;display:flex;flex-direction:column}#app.ball-drop-layout>header{flex-shrink:0}#app.ball-drop-layout>.ball-screen{height:auto;flex:1;min-height:0}
+.ball-gate{display:grid;place-items:center;overflow:visible}.ball-board{min-height:max(190px,calc(var(--ball-rows)*42px + 24px))}.gate-turn-icon{display:block;width:clamp(38px,5.6vw,68px);height:clamp(38px,5.6vw,68px);max-width:100%;max-height:100%;filter:drop-shadow(0 2px 1px #49754066);transition:transform .16s}.ball-gate.gate-tap .gate-turn-icon{transform:scale(.86) rotate(-5deg)}.ball-gate.gate-current .gate-turn-icon{filter:drop-shadow(0 3px 2px #b07e28aa) saturate(1.1)}

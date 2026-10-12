@@ -1,6 +1,9 @@
-// Shared synthesized sound effects; no background music or speech.
+// Shared synthesized sound effects and a coloring-only melody; no speech.
 let context,
-  enabled = true;
+  enabled = true,
+  coloringMusicWanted = false,
+  coloringMusicTimer = 0,
+  coloringMusicStep = 0;
 function note(freq, start, length = 0.18, gain = 0.045) {
   const o = context.createOscillator(),
     g = context.createGain();
@@ -43,6 +46,7 @@ export function sound(success = false) {
     else if (success === "crane-down") [440, 392, 349].forEach((f, i) => note(f, now + i * 0.14, 0.16, 0.035));
     else if (success === "bell") [988, 1318].forEach((f, i) => note(f, now + i * 0.08, 0.24, 0.035));
     else if (success === "coin-clink") [784, 988, 1318].forEach((f, i) => note(f, now + i * 0.075, 0.16, 0.03));
+    else if (success === "gashapon-spin") [392, 523, 659, 784].forEach((f, i) => note(f, now + i * 0.09, 0.13, 0.025));
     else if (["footprints", "dropped-coin", "moving-grass", "moved-box", "opened-door", "puddle-footprints", "mud-avoidance", "quiet-path", "coin-noise"].includes(success)) {
       const pitch = { footprints: 440, "dropped-coin": 784, "moving-grass": 659, "moved-box": 523, "opened-door": 587, "puddle-footprints": 698, "mud-avoidance": 494, "quiet-path": 659, "coin-noise": 880 }[success];
       note(pitch, now, 0.11, 0.025);
@@ -54,8 +58,45 @@ export function sound(success = false) {
 }
 export function setSound(value) {
   enabled = value;
-  if (!enabled) context?.suspend().catch(() => {});
+  if (!enabled) {
+    clearTimeout(coloringMusicTimer);
+    context?.suspend().catch(() => {});
+  } else if (coloringMusicWanted) playColoringMusic();
+}
+function playColoringMusic() {
+  if (!enabled || !coloringMusicWanted || document.hidden) return;
+  try {
+    context ||= new (window.AudioContext || window.webkitAudioContext)();
+    context.resume().catch(() => {});
+    const melody = [523, 659, 784, 659, 587, 698, 880, 698, 523, 659, 784, 988, 880, 784, 659, 587];
+    const freq = melody[coloringMusicStep % melody.length];
+    const now = context.currentTime;
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.018, now + 0.035);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.34);
+    if (coloringMusicStep % 4 === 0) note(Math.round(freq / 2), now, 0.42, 0.008);
+    coloringMusicStep++;
+    coloringMusicTimer = setTimeout(playColoringMusic, 390);
+  } catch {
+    /* Painting stays usable if music is unavailable. */
+  }
+}
+export function setColoringMusic(active) {
+  coloringMusicWanted = active;
+  clearTimeout(coloringMusicTimer);
+  if (active) playColoringMusic();
 }
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) context?.suspend().catch(() => {});
+  if (document.hidden) {
+    clearTimeout(coloringMusicTimer);
+    context?.suspend().catch(() => {});
+  } else if (coloringMusicWanted) playColoringMusic();
 });

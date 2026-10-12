@@ -6,6 +6,11 @@ const flowers = [
   { id: "sunflower", icon: "🌻", name: "ひまわり" },
   { id: "blossom", icon: "🪻", name: "あおい はな" },
 ];
+const numbers = Array.from({ length: 8 }, (_, i) => ({
+  id: `number-${i + 1}`,
+  icon: String(i + 1),
+  name: `${i + 1}`,
+}));
 let activeSequence = [];
 const shuffle = (items) => {
   const result = [...items];
@@ -16,32 +21,39 @@ const shuffle = (items) => {
   return result;
 };
 
-function newSequence(stage) {
+function newSequence(stage, level) {
   const count = stage + 1;
-  activeSequence = shuffle(flowers).slice(0, count);
+  activeSequence = shuffle(level === 1 ? numbers : flowers).slice(0, count);
 }
 
-export function memoryView(stage) {
-  newSequence(stage);
+export function memoryLevelView() {
+  return `<main class="stage-menu memory-level-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><span class="stage-label">おぼえる</span></div><h1 class="screen-title">なにを おぼえる？</h1><div class="stage-choice-grid"><button class="stage-card" data-level="1" data-level-game="memory"><span class="number-level-art" aria-hidden="true">1 2 3</span><span><strong>レベル 1 · すうじ</strong><small>すうじの じゅんばん</small></span></button><button class="stage-card" data-level="2" data-level-game="memory"><span class="memory-menu-art" aria-hidden="true">🌷 🌼 🌸</span><span><strong>レベル 2 · おはな</strong><small>おはなの じゅんばん</small></span></button></div></main>`;
+}
+
+export function memoryView(stage, level = 1) {
+  newSequence(stage, level);
+  const subject = level === 1 ? "すうじ" : "おはな";
+  const title = level === 1 ? "すうじの ならびを おぼえよう！" : "おはなの ならびを おぼえよう！";
   return `<main class="memory-screen">
-    <div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">おぼえる · ${stage}/3</span></div>
-    <h1 class="screen-title">おはなの ならびを おぼえよう！</h1>
-    <p class="memory-instruction" id="memory-instruction" role="status" aria-live="polite">おはなを よく みてね</p>
-    <div class="memory-garden" aria-label="おはなの はなだん">
-      <div class="memory-bed"><div class="memory-soil"></div><div class="memory-flowers">${activeSequence.map((flower, i) => `<div class="memory-pot"><span class="memory-flower" data-memory-flower="${i}">${flower.icon}</span><i></i></div>`).join("")}</div></div>
+    <div class="stage-top"><button class="back" data-go="memory-levels" aria-label="レベルをえらぶ">‹</button><div class="steps" aria-label="ステージ ${stage} / 3">${[1,2,3].map((n) => `<span class="step-dot ${n === stage ? "active" : n < stage ? "done" : ""}"></span>`).join("")}</div><span class="stage-label">おぼえる L${level} · ${stage}/3</span></div>
+    <h1 class="screen-title">${title}</h1>
+    <p class="memory-instruction" id="memory-instruction" role="status" aria-live="polite">${subject}を よく みてね</p>
+    <div class="memory-garden ${level === 1 ? "memory-numbers" : "memory-flowers-mode"}" aria-label="${subject}の ならび">
+      <div class="memory-bed"><div class="memory-soil"></div><div class="memory-flowers">${activeSequence.map((item, i) => `<div class="memory-pot"><span class="memory-flower" data-memory-flower="${i}">${item.icon}</span><i></i></div>`).join("")}</div></div>
       <div class="memory-hide" id="memory-hide" hidden>🌱　🌱　🌱　🌱</div>
     </div>
     <div class="memory-slots memory-slots-hidden" id="memory-slots" aria-label="おぼえた順番">${activeSequence.map((_, i) => `<span class="memory-slot" data-memory-slot="${i}">${i + 1}</span>`).join("")}</div>
-    <div class="memory-choices" id="memory-choices" hidden aria-label="おはなを えらぶ">${shuffle([...activeSequence, ...shuffle(flowers.filter((flower) => !activeSequence.some((item) => item.id === flower.id))).slice(0, 3)]).map((flower) => `<button class="memory-choice" data-memory-choice="${flower.id}" aria-label="${flower.name}">${flower.icon}</button>`).join("")}</div>
+    <div class="memory-choices" id="memory-choices" hidden aria-label="${subject}を えらぶ">${shuffle([...activeSequence, ...shuffle((level === 1 ? numbers : flowers).filter((item) => !activeSequence.some((chosen) => chosen.id === item.id))).slice(0, 3)]).map((item) => `<button class="memory-choice" data-memory-choice="${item.id}" aria-label="${item.name}">${item.icon}</button>`).join("")}</div>
     <p class="memory-message" id="memory-message">じゅんばんを おぼえたら おしてね</p>
-    <div class="memory-actions"><button class="secondary" id="memory-watch" aria-label="おはなを もういちど みる">👀 もういちど みる</button><button class="primary" id="memory-reveal">おぼえたよ！</button><button class="primary" id="memory-next" hidden>つぎの おはなへ ›</button></div>
+    <div class="memory-actions"><button class="secondary" id="memory-watch" aria-label="${subject}を もういちど みる">👀 もういちど みる</button><button class="primary" id="memory-reveal">おぼえたよ！</button><button class="primary" id="memory-next" hidden>つぎへ ›</button></div>
   </main>`;
 }
 
-export function bindMemory({ stage, activate, tone, onMistake = () => {}, onSuccess, onNext }) {
+export function bindMemory({ stage, level = 1, activate, tone, onMistake = () => {}, onSuccess, onNext }) {
   const instruction = document.querySelector("#memory-instruction");
   const message = document.querySelector("#memory-message");
   const sequence = activeSequence;
+  const subject = level === 1 ? "すうじ" : "おはな";
   let showing = true;
   let cursor = 0;
   let complete = false;
@@ -54,8 +66,8 @@ export function bindMemory({ stage, activate, tone, onMistake = () => {}, onSucc
     document.querySelector("#memory-slots").classList.remove("memory-slots-hidden");
     document.querySelector("#memory-choices").hidden = false;
     document.querySelector("#memory-reveal").hidden = true;
-    instruction.textContent = "おなじ じゅんばんに はなを おそう！";
-    message.textContent = "さいしょの おはなは どれかな？";
+    instruction.textContent = `おなじ じゅんばんに ${subject}を おそう！`;
+    message.textContent = `さいしょの ${subject}は どれかな？`;
   }
 
   function watchAgain() {
@@ -71,7 +83,7 @@ export function bindMemory({ stage, activate, tone, onMistake = () => {}, onSucc
     document.querySelector("#memory-slots").classList.add("memory-slots-hidden");
     document.querySelector("#memory-choices").hidden = true;
     document.querySelector("#memory-reveal").hidden = false;
-    instruction.textContent = "おはなを よく みてね";
+    instruction.textContent = `${subject}を よく みてね`;
     message.textContent = "じゅんばんを おぼえたら おしてね";
     tone();
   }
@@ -97,12 +109,12 @@ export function bindMemory({ stage, activate, tone, onMistake = () => {}, onSucc
     cursor++;
     tone(true);
     if (cursor < sequence.length) {
-      message.textContent = "そうそう！ つぎの はなは どれかな？";
+      message.textContent = `そうそう！ つぎの ${subject}は どれかな？`;
       return;
     }
     complete = true;
     document.querySelector(".memory-garden").classList.remove("memory-hidden");
-    instruction.textContent = "おはなの じゅんばん、せいかい！";
+    instruction.textContent = `${subject}の じゅんばん、せいかい！`;
     message.textContent = "ぜんぶ おぼえていたね！";
     tone(true);
     const last = onSuccess();

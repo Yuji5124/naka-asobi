@@ -9,6 +9,9 @@ const routeFor = (stage, lane) => {
   const route = stage === 1 ? [1, -1] : stage === 2 ? [1, 1, -1, -1] : [1, 1, -1, -1, 1, -1];
   return lane >= 3 ? route.map((turn) => -turn) : route;
 };
+const turnIcon = (turn) => turn < 0
+  ? '<svg class="gate-turn-icon" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 24C50 43 31 47 25 69" fill="none" stroke="#fff8d8" stroke-width="15" stroke-linecap="round"/><path d="m11 59 14 18 17-14" fill="none" stroke="#fff8d8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 24C50 43 31 47 25 69" fill="none" stroke="#369847" stroke-width="8" stroke-linecap="round"/><path d="m14 60 11 15 14-12" fill="none" stroke="#369847" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="17" r="12" fill="#ffe276" stroke="#fff8d8" stroke-width="4"/><circle cx="46" cy="16" r="1.8" fill="#75513b"/><circle cx="54" cy="16" r="1.8" fill="#75513b"/><path d="M46 21q4 4 8 0" fill="none" stroke="#75513b" stroke-width="1.8" stroke-linecap="round"/></svg>'
+  : '<svg class="gate-turn-icon" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 24C50 43 69 47 75 69" fill="none" stroke="#fff8d8" stroke-width="15" stroke-linecap="round"/><path d="m59 63 17 14 14-18" fill="none" stroke="#fff8d8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 24C50 43 69 47 75 69" fill="none" stroke="#369847" stroke-width="8" stroke-linecap="round"/><path d="m62 63 14 12 11-15" fill="none" stroke="#369847" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="50" cy="17" r="12" fill="#ffe276" stroke="#fff8d8" stroke-width="4"/><circle cx="46" cy="16" r="1.8" fill="#75513b"/><circle cx="54" cy="16" r="1.8" fill="#75513b"/><path d="M46 21q4 4 8 0" fill="none" stroke="#75513b" stroke-width="1.8" stroke-linecap="round"/></svg>';
 let round;
 
 export function ballDropView(stage) {
@@ -16,7 +19,7 @@ export function ballDropView(stage) {
   round = { stage, targetLane, sourceLane: targetLane, route: routeFor(stage, targetLane) };
   const rows = round.route.length;
   const entrances = cups.map((cup, i) => '<button class="ball-entry" data-ball-entry="' + i + '" aria-label="' + cup.name + 'のボール" style="--ball-color:' + cup.color + '">' + cup.ball + '<span></span></button>').join("");
-  const gates = Array.from({ length: rows }, (_, row) => cups.map((_, col) => '<button class="ball-gate" data-gate-row="' + row + '" data-gate-col="' + col + '" aria-label="' + (row + 1) + 'だんめの みちをかえる" aria-pressed="false">↘</button>').join("")).join("");
+  const gates = Array.from({ length: rows }, (_, row) => cups.map((_, col) => '<button class="ball-gate" data-gate-row="' + row + '" data-gate-col="' + col + '" aria-label="' + (row + 1) + 'だんめの みちを みぎへ かえる" aria-pressed="false">' + turnIcon(1) + '</button>').join("")).join("");
   const goals = cups.map((cup, i) => '<div class="ball-goal ' + (i === targetLane ? "ball-goal-target" : "") + '" data-goal="' + i + '" style="--goal-color:' + cup.color + '"><span>' + (i === targetLane ? "★" : "") + '</span><small>' + cup.name + '</small></div>').join("");
   const steps = [1, 2, 3].map((n) => '<span class="step-dot ' + (n === stage ? "active" : n < stage ? "done" : "") + '"></span>').join("");
   return '<main class="ball-screen"><div class="stage-top"><button class="back" data-go="select" aria-label="あそびをえらぶ">‹</button><div class="steps" aria-label="ステージ ' + stage + ' / 3">' + steps + '</div><span class="stage-label">ころころ · ' + stage + '/3</span></div><h1 class="screen-title">ボールを ゴールへ はこぼう！</h1><p class="ball-instruction" id="ball-instruction">' + cups[targetLane].name + 'の ボールを えらぼう</p><div class="ball-entrances" aria-label="ボールを えらぶ">' + entrances + '</div><div class="ball-board" id="ball-board" style="--ball-rows:' + rows + '"><div class="ball-gates">' + gates + '</div><svg class="ball-trail" id="ball-trail" aria-hidden="true" viewBox="0 0 500 500" preserveAspectRatio="none"><polyline id="ball-trail-line" points=""/></svg><div class="rolling-ball" id="rolling-ball" aria-hidden="true">⚪</div></div><div class="ball-goals" aria-label="ゴールのいろ">' + goals + '</div><p class="ball-message" id="ball-message" role="status" aria-live="polite">みちの タイルを タッチすると むきが かわるよ</p><div class="ball-actions"><button class="secondary" id="ball-hint">みちの ヒント</button><button class="secondary" id="ball-reset" hidden>もういちど</button><button class="primary" id="ball-drop" disabled>ボールを おとす！</button><button class="primary" id="ball-next" hidden>つぎへ ›</button></div></main>';
@@ -57,7 +60,9 @@ export function bindBallDrop({ stage, activate, tone, onMistake, onSuccess, onNe
     gateButtons.forEach((button) => {
       const row = Number(button.dataset.gateRow), col = Number(button.dataset.gateCol);
       const correct = hintOn && route[row] === directions[row][col] && solutionCols[row] === col;
-      button.textContent = directions[row][col] < 0 ? "↙" : "↘";
+      const turn = directions[row][col];
+      button.innerHTML = turnIcon(turn);
+      button.setAttribute("aria-label", `${row + 1}だんめの みちを ${turn < 0 ? "ひだり" : "みぎ"}へ かえる`);
       button.classList.toggle("gate-current", !rolling && !complete && activeCols[row] === col);
       button.classList.toggle("gate-hint", correct);
       button.setAttribute("aria-pressed", String(directions[row][col] < 0));

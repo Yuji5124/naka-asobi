@@ -4,6 +4,7 @@ export const GAME_NAMES = {
   trace: "なぞる",
   "rope-trace": "なぞって くじびき",
   memory: "おぼえる",
+  gashapon: "ガシャポン",
   "ball-drop": "ころころボール",
   path: "つなぐ",
   write: "かく",
@@ -54,7 +55,7 @@ export function readExperiment(saved = {}) {
   d.numberDigitIndex = integer(saved.numberDigitIndex) % 9;
   d.stageProgress = Object.fromEntries(
     Object.entries(saved.stageProgress || {}).filter(([id, n]) =>
-      (GAME_NAMES[id] || /^(path|maze|number|number-link|coloring|coin-thief):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
+      (GAME_NAMES[id] || /^(path|maze|number|number-link|coloring|coin-thief|memory):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
     ),
   );
   d.totalCoinsEarned = Math.floor(d.totalPoints / 5);
@@ -188,7 +189,7 @@ export function createExperiment(data, save, onChange = () => {}) {
       mistakeCount: 0,
       pointsEarned: 0,
       rewardItem: null,
-      rewardPlayed: gameId === "crane",
+      rewardPlayed: gameId === "crane" || gameId === "gashapon",
     };
     data.sessions.push(active);
     last = performance.now();
@@ -208,16 +209,16 @@ export function createExperiment(data, save, onChange = () => {}) {
     if (!active || active.completed) return null;
     checkpoint();
     active.completed = true;
-    const crane = active.gameId === "crane";
-    active.pointsEarned = !crane && awardPoint ? 1 : 0;
+    const rewardGame = active.gameId === "crane" || active.gameId === "gashapon";
+    active.pointsEarned = !rewardGame && awardPoint ? 1 : 0;
     data.playLogs[`${active.gameId}:${active.stageId}`].completedCount++;
     const effect = ["hanamaru", "fireworks", "stamp", "sparkles"][Math.floor(Math.random() * 4)];
-    if (active.gameId !== "crane") {
+    if (!rewardGame) {
       active.effect = effect;
       data.effects[effect].shown++;
     }
     let coin = false;
-    if (!crane && awardPoint) {
+    if (!rewardGame && awardPoint) {
       data.totalPoints++;
       const earned = Math.floor(data.totalPoints / 5);
       if (earned > data.totalCoinsEarned) {
@@ -229,13 +230,13 @@ export function createExperiment(data, save, onChange = () => {}) {
     }
     save();
     onChange();
-    return { effect, coin, points: data.totalPoints, pointAwarded: !crane && awardPoint, sessionId: active.id };
+    return { effect, coin, points: data.totalPoints, pointAwarded: !rewardGame && awardPoint, sessionId: active.id };
   }
-  function spend() {
+  function spend(source = "crane") {
     if (data.totalPoints < 5 || data.coinBalance < 1) return false;
     data.coinBalance--;
     data.totalCoinsSpent++;
-    transaction("spent", "crane");
+    transaction("spent", source);
     if (active) active.coinsSpent = (active.coinsSpent || 0) + 1;
     save();
     onChange();
@@ -321,6 +322,7 @@ export function parentLogView(data) {
     ["使用コイン", data.totalCoinsSpent + "枚"],
     ["現在のコイン", data.coinBalance + "枚"],
     ["クレーン回数", stats.find((s) => s.gameId === "crane").playCount + "回"],
+    ["ガシャポン回数", stats.find((s) => s.gameId === "gashapon").playCount + "回"],
     ["景品", data.collection.length + "個"],
   ]
     .map(
