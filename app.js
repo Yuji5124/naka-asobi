@@ -32,6 +32,7 @@ import { ropeMenuView, ropeView, bindRope } from "./rope-trace.js";
 import { coloringLevelView, coloringView, bindColoring } from "./coloring.js";
 import { memoryLevelView, memoryView, bindMemory } from "./memory.js";
 import { ballDropView, bindBallDrop } from "./ball-drop.js";
+import { jumpLandView, bindJumpLand } from "./jump-land.js";
 const app = document.querySelector("#app");
 let pointerReleaseHandled = false;
 app.addEventListener(
@@ -459,6 +460,7 @@ function go(to, reason = "start") {
   if (to === "memory-levels") body = memoryLevelView();
   if (to === "memory") { cycleGame = "memory"; cycleStage = data.stageProgress[progressKey()] || 1; body = memoryView(cycleStage, memoryLevel); }
   if (to === "ball-drop") { cycleGame = "ball-drop"; cycleStage = data.stageProgress[progressKey()] || 1; body = ballDropView(cycleStage); }
+  if (to === "jump-land") { cycleGame = "jump-land"; cycleStage = data.stageProgress[progressKey()] || 1; body = jumpLandView(cycleStage); }
   if (to === "path-level" || to === "maze-level") {
     const path = to === "path-level";
     body = `<main class="stage-menu"><div class="stage-top"><button class="back" data-go="select">‹</button><span class="stage-label">${path ? "つなぐ" : "めいろ"}</span></div><h1 class="screen-title">レベルを えらぼう</h1><div class="stage-choice-grid">${[1,2].map((n) => `<button class="stage-card" data-level="${n}" data-level-game="${path ? "path" : "maze"}">${path ? stageArt(2) : mazeCardArt()}<span><strong>レベル ${n}</strong><small>${path ? n === 1 ? "3 × 3" : "4 × 4" : n === 1 ? "いつもの めいろ" : "ひろい めいろ"}</small></span></button>`).join("")}</div></main>`;
@@ -515,6 +517,7 @@ function go(to, reason = "start") {
   if (to === "spot-diff") experiment.start("spot-diff", `spot-diff-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   if (to === "memory") experiment.start("memory", `memory-L${memoryLevel}-S${cycleStage}`, reason, { level: memoryLevel, stage: cycleStage });
   if (to === "ball-drop") experiment.start("ball-drop", `ball-drop-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
+  if (to === "jump-land") experiment.start("jump-land", `jump-land-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   if (to === "coloring") experiment.start("coloring", coloringLevel === 1 ? `coloring-S${cycleStage}` : `coloring-L${coloringLevel}-S${cycleStage}`, reason, { level: coloringLevel, stage: cycleStage });
   if (to === "rope-trace") experiment.start("rope-trace", `rope-trace-S${cycleStage}`, reason, { level: 1, stage: cycleStage });
   bindCommon();
@@ -596,6 +599,8 @@ function go(to, reason = "start") {
     });
   if (to === "ball-drop")
     cleanupExtra = bindBallDrop({ stage: cycleStage, activate, tone, onMistake: () => experiment.mistake(), onSuccess: award, onNext(completedStage) { if (completedStage >= 3) go("select"); else go("ball-drop"); } });
+  if (to === "jump-land")
+    cleanupExtra = bindJumpLand({ stage: cycleStage, activate, tone, onMistake: () => experiment.mistake(), onSuccess(prizeId) { experiment.prize(prizeId); return award(); }, onNext(completedStage) { if (completedStage >= 3) go("select"); else go("jump-land"); } });
   if (to === "memory")
     cleanupExtra = bindMemory({ stage: cycleStage, level: memoryLevel, activate, tone, onMistake: () => experiment.mistake(), onSuccess: award, onNext(completedStage) { if (completedStage >= 3) go("select"); else go("memory"); } });
   if (to === "coloring")

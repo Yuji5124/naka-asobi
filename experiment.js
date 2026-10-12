@@ -6,6 +6,7 @@ export const GAME_NAMES = {
   memory: "おぼえる",
   gashapon: "ガシャポン",
   "ball-drop": "ころころボール",
+  "jump-land": "ぴょんぴょんランド",
   path: "つなぐ",
   write: "かく",
   shape: "かたち",
