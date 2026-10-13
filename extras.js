@@ -129,8 +129,8 @@ export function rewardView(data) {
 }
 export function gashaponView(data) {
   const canPlay = data.totalPoints >= 5 && data.coinBalance > 0;
-  const message = canPlay ? "コイン1まいで ガシャポンを まわそう！" : data.totalPoints < 5 ? `あと ${5 - data.totalPoints}ポイントで あそべるよ！` : "コインを あつめて また あそぼう！";
-  return `<main class="gashapon-screen"><div class="stage-top"><button class="back" data-go="reward" aria-label="ごほうびへ もどる">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの ガシャポン</h1><p class="screen-note" id="gashapon-message" role="status" aria-live="polite">${message}</p><div class="gashapon-machine" id="gashapon-machine"><div class="gashapon-top"><div class="gashapon-globe"><div class="gashapon-capsules">🟡 🔴 🔵 🟣</div><div class="gashapon-sticker">なにが<br>でるかな？</div></div><div class="gashapon-body"><div class="gashapon-knob">✿</div><div class="gashapon-slot">カプセルの でぐち</div></div><div class="gashapon-tray"></div><div class="gashapon-capsule" id="gashapon-capsule" aria-hidden="true"><span class="capsule-top"></span><span class="capsule-bottom"></span><span class="capsule-prize" id="gashapon-prize"></span></div><div class="gashapon-coin" id="gashapon-coin">🪙</div></div><button class="primary gashapon-start" id="gashapon-start" ${canPlay ? "" : "disabled"}>🪙 1まいで まわす</button><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="reward">クレーンで あそぶ</button></div></main>`;
+  const message = canPlay ? "コインを いれて、レバーを まわそう！" : data.totalPoints < 5 ? `あと ${5 - data.totalPoints}ポイントで あそべるよ！` : "コインを あつめて また あそぼう！";
+  return `<main class="gashapon-screen"><div class="stage-top"><button class="back" data-go="reward" aria-label="ごほうびへ もどる">‹</button><span class="stage-label">ごほうび</span></div><h1 class="screen-title">たからもの ガシャポン</h1><p class="screen-note" id="gashapon-message" role="status" aria-live="polite">${message}</p><div class="gashapon-machine" id="gashapon-machine" aria-label="カプセルが入ったガシャポンマシン"><div class="gashapon-top"><div class="gashapon-globe"><div class="gashapon-capsules"><i>🟡</i><i>🔴</i><i>🔵</i><i>🟣</i><i>🟢</i></div><div class="gashapon-sticker">なにが<br>でるかな？</div></div></div><div class="gashapon-body"><div class="gashapon-brand">ひなあそび<br><strong>ガシャポン</strong></div><div class="gashapon-coin-slot"><span>コイン</span><i></i></div><div class="gashapon-knob" aria-hidden="true"><b>✦</b></div><div class="gashapon-handle" aria-hidden="true"></div><div class="gashapon-outlet-label">カプセルの でぐち</div></div><div class="gashapon-tray"><span>⬇</span></div><div class="gashapon-capsule" id="gashapon-capsule" aria-hidden="true"><span class="capsule-top"></span><span class="capsule-bottom"></span><span class="capsule-prize" id="gashapon-prize"></span></div><div class="gashapon-coin" id="gashapon-coin">🪙</div></div><button class="primary gashapon-start" id="gashapon-start" ${canPlay ? "" : "disabled"}>🪙 1まいで まわす</button><div class="actions"><button class="secondary" data-go="collection">たからもの ${data.collection.length}こ</button><button class="secondary" data-go="reward">クレーンで あそぶ</button></div></main>`;
 }
 export function collectionView(data) {
   return `<main class="collection-screen"><div class="stage-top"><button class="back" data-go="reward">‹</button><span class="stage-label">たからもの</span></div><h1 class="screen-title">あつめた たからもの</h1><div class="treasure-grid">${
@@ -267,7 +267,7 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
   };
 }
 
-export function bindGashapon({ data, experiment, activate, tone, refresh, celebratePrize = () => {} }) {
+export function bindGashapon({ data, experiment, tone, refresh, celebratePrize = () => {} }) {
   let busy = false;
   let alive = true;
   const timers = [];
@@ -276,7 +276,10 @@ export function bindGashapon({ data, experiment, activate, tone, refresh, celebr
   const capsule = document.querySelector("#gashapon-capsule");
   const prizeBox = document.querySelector("#gashapon-prize");
   const message = document.querySelector("#gashapon-message");
-  activate(button, () => {
+  // Use the browser's native click on this plain button. The shared pointer
+  // helper fires on pointerup and can be swallowed on some iPad Safari builds
+  // when the handler disables the button before Safari dispatches click.
+  button.addEventListener("click", () => {
     if (busy || data.totalPoints < 5 || data.coinBalance < 1) return;
     experiment.start("gashapon", "gashapon-01");
     if (!experiment.spend("gashapon")) {
