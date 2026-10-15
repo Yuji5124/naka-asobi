@@ -1466,10 +1466,13 @@ body[data-screen="logs"] {
 .gashapon-screen{height:calc(100vh - 96px);height:calc(100svh - 96px);box-sizing:border-box;grid-template-rows:42px auto auto minmax(220px,1fr) auto auto;gap:6px;padding:6px 16px 10px}
 .gashapon-machine{width:min(100%,660px);max-height:420px;min-height:250px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
 .gashapon-top{z-index:2;inset:0 0 auto;height:58%;display:block;border:0;background:transparent;border-radius:0}
-.gashapon-globe{position:absolute;left:50%;top:0;width:min(44%,238px);height:min(44vw,238px);aspect-ratio:1;margin:0;transform:translateX(-50%);border:8px solid #fff;border-radius:50%;background:radial-gradient(circle at 32% 22%,#fff 0 5%,#e3faff 6% 20%,#99dcea 66%,#65bad2);box-shadow:inset 0 0 0 5px #b2edf1,0 7px 0 #438cac,0 10px 0 #28769c}
+.gashapon-top:before,.gashapon-top:after{content:"";position:absolute;left:50%;transform:translateX(-50%);pointer-events:none}
+.gashapon-top:before{z-index:3;top:0;width:58%;height:22%;border:4px solid #eb6268;border-bottom:0;border-radius:100% 100% 14% 14% / 90% 90% 12% 12%;background:linear-gradient(155deg,#ff7778 0%,#f5222a 48%,#d80c1e 100%);box-shadow:inset 0 7px 9px #ffaaaa,0 4px 0 #b92e47}
+.gashapon-top:after{z-index:4;top:18%;width:66%;height:12%;border:4px solid #f1d7b1;border-radius:14px;background:linear-gradient(#fff4da,#ecd3ac);box-shadow:0 4px 0 #b8896d}
+.gashapon-globe{position:absolute;z-index:1;left:50%;top:12%;width:min(44%,220px);height:min(38vw,205px);aspect-ratio:1;margin:0;transform:translateX(-50%);border:8px solid #fff;border-radius:50%;background:radial-gradient(circle at 32% 22%,#ffffffd9 0 5%,#e3faffc9 20%,#99dceab8 66%,#65bad299);box-shadow:inset 0 0 0 5px #b2edf1,0 7px 0 #438cac,0 10px 0 #28769c}
 .gashapon-capsules{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:0 3px;width:75%;height:75%;font-size:clamp(30px,4.6vw,48px);letter-spacing:0;line-height:1.05;filter:drop-shadow(0 3px 1px #5689a166)}
 .gashapon-capsules i{font-style:normal;display:inline-block;animation:capsule-float 2.4s ease-in-out infinite alternate}.gashapon-capsules i:nth-child(even){animation-delay:-1.2s}
-.gashapon-sticker{right:-55px;bottom:14px;z-index:2;padding:8px 11px;font-size:clamp(13px,1.7vw,17px)}
+.gashapon-sticker{right:-55px;top:30%;bottom:auto;z-index:2;padding:8px 11px;font-size:clamp(13px,1.7vw,17px)}
 .gashapon-body{top:43%;left:9%;right:9%;height:53%;border:8px solid #d96e91;border-radius:28px 28px 36px 36px;background:linear-gradient(90deg,#f28eaa 0%,#ffb8c7 18%,#ffd1ba 50%,#ffb4c3 82%,#ec87a3 100%);box-shadow:inset 0 -16px #d76d8d,0 7px 0 #b95579,0 13px 0 #3982a1}
 .gashapon-brand{position:absolute;left:8%;top:13%;padding:4px 10px;border:3px solid #fff;border-radius:12px;background:#fff4cf;color:#9b5269;font-size:clamp(12px,1.7vw,17px);line-height:1.05;font-weight:800;transform:rotate(-3deg);box-shadow:0 3px 0 #d38b85}
 .gashapon-brand strong{font-size:1.18em;color:#d44f78}
@@ -1478,6 +1481,7 @@ body[data-screen="logs"] {
 .gashapon-knob{left:auto;right:15%;top:21%;width:clamp(50px,7.5vw,70px);border:6px solid #fff;background:radial-gradient(circle at 35% 28%,#fff4a8,#ffb936 68%,#ef8248);color:#fff;font-size:clamp(26px,3.6vw,38px);box-shadow:0 5px 0 #b95770,0 0 0 5px #ffe5c5;transform:none}
 .gashapon-handle{position:absolute;right:calc(15% + 30px);top:39%;width:clamp(31px,5vw,46px);height:9px;border:2px solid #fff;border-radius:8px;background:#b95579;transform:rotate(-48deg);transform-origin:right center;box-shadow:0 2px 0 #8e405f}
 .gashapon-machine.gashapon-running .gashapon-knob{animation:knob-turn-simple 1s ease-in-out 2}
+.gashapon-machine.gashapon-running .gashapon-handle{animation:handle-turn 1s ease-in-out 2}
 .gashapon-outlet-label{position:absolute;left:50%;top:65%;width:42%;padding:5px 8px;border:3px solid #fff;border-radius:12px;background:#b95778;color:#fff9e8;font-size:clamp(12px,1.7vw,16px);font-weight:900;white-space:nowrap;transform:translateX(-50%);box-shadow:0 3px 0 #943e61}
 .gashapon-tray{top:auto;bottom:1%;left:50%;width:32%;height:18%;display:grid;place-items:start center;border:6px solid #4286a3;border-radius:16px 16px 34px 34px;background:linear-gradient(#b9e9f1 0 18%,#f9fded 19% 100%);box-shadow:inset 0 8px #78b9cd,0 5px 0 #2d718f;transform:translateX(-50%);color:#68a9bd;font-size:clamp(17px,2.3vw,24px);font-weight:900}
 .gashapon-tray span{transform:translateY(-11px);text-shadow:0 2px #fff}
@@ -1487,6 +1491,7 @@ body[data-screen="logs"] {
 .gashapon-screen .screen-note{min-height:1.3em;font-weight:800;color:#80533b}
 .gashapon-start{touch-action:manipulation;pointer-events:auto;-webkit-appearance:none;appearance:none}
 @keyframes knob-turn-simple{50%{transform:rotate(220deg) scale(1.08)}}
+@keyframes handle-turn{50%{transform:rotate(28deg)}}
 @keyframes gashapon-coin-to-slot{0%{opacity:1;transform:translate(0,-45px) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(0,40px) rotate(500deg) scale(.4)}}
 @media(max-height:700px){.gashapon-screen{grid-template-rows:36px auto auto minmax(205px,1fr) auto auto;gap:4px;padding:4px 12px 8px}.gashapon-machine{min-height:220px;max-height:340px}.gashapon-brand{top:12%}.gashapon-tray{height:17%}}
-@media(max-width:600px){.gashapon-screen{width:calc(100% - 12px);padding-inline:6px}.gashapon-machine{width:min(100%,520px)}.gashapon-globe{width:min(49%,210px);height:min(49vw,210px)}.gashapon-sticker{right:-22px}.gashapon-body{left:4%;right:4%}.gashapon-brand{left:5%}.gashapon-coin-slot{left:6%}.gashapon-knob{right:10%}.gashapon-handle{right:calc(10% + 29px)}.gashapon-tray{width:42%}}
+@media(max-width:600px){.gashapon-screen{width:calc(100% - 12px);padding-inline:6px}.gashapon-machine{width:min(100%,520px)}.gashapon-top:before{width:64%}.gashapon-top:after{width:72%}.gashapon-globe{width:min(49%,210px);height:min(49vw,210px)}.gashapon-sticker{right:-22px}.gashapon-body{left:4%;right:4%}.gashapon-brand{left:5%}.gashapon-coin-slot{left:6%}.gashapon-knob{right:10%}.gashapon-handle{right:calc(10% + 29px)}.gashapon-tray{width:42%}}
