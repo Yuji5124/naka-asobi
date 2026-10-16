@@ -1495,3 +1495,23 @@ body[data-screen="logs"] {
 @keyframes gashapon-coin-to-slot{0%{opacity:1;transform:translate(0,-45px) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(0,40px) rotate(500deg) scale(.4)}}
 @media(max-height:700px){.gashapon-screen{grid-template-rows:36px auto auto minmax(205px,1fr) auto auto;gap:4px;padding:4px 12px 8px}.gashapon-machine{min-height:220px;max-height:340px}.gashapon-brand{top:12%}.gashapon-tray{height:17%}}
 @media(max-width:600px){.gashapon-screen{width:calc(100% - 12px);padding-inline:6px}.gashapon-machine{width:min(100%,520px)}.gashapon-top:before{width:64%}.gashapon-top:after{width:72%}.gashapon-globe{width:min(49%,210px);height:min(49vw,210px)}.gashapon-sticker{right:-22px}.gashapon-body{left:4%;right:4%}.gashapon-brand{left:5%}.gashapon-coin-slot{left:6%}.gashapon-knob{right:10%}.gashapon-handle{right:calc(10% + 29px)}.gashapon-tray{width:42%}}
+
+/* Use the supplied transparent gashapon illustration as the stage centerpiece. */
+.gashapon-machine{display:block;width:min(100%,52svh,460px);height:min(52svh,420px);min-height:0;max-height:none;aspect-ratio:1;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+.gashapon-machine-art{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;pointer-events:none;transform-origin:50% 78%}
+.gashapon-machine.gashapon-running .gashapon-machine-art{animation:gashapon-machine-turn 1.1s ease-in-out 2}
+.gashapon-machine.gashapon-shaking .gashapon-machine-art{animation:gashapon-art-shake .12s ease-in-out 10}
+.gashapon-coin{left:67%;top:59%;bottom:auto;font-size:clamp(24px,4vw,38px);transform:translate(-50%,-20px)}
+.gashapon-coin.gashapon-coin-drop{animation:gashapon-coin-to-slot .7s ease-in forwards}
+.gashapon-capsule{top:75%;left:50%;width:clamp(64px,9vw,96px);aspect-ratio:1}
+.gashapon-twinkle{position:absolute;z-index:4;left:50%;top:38%;width:76%;color:#fff8aa;font-size:clamp(22px,4vw,36px);font-weight:900;letter-spacing:.35em;opacity:0;pointer-events:none;transform:translate(-50%,-50%) scale(.6);text-shadow:0 0 10px #fff,0 0 18px #ffdc65}
+.gashapon-machine.gashapon-running .gashapon-twinkle{animation:gashapon-twinkle 1.3s ease-in-out 2}
+.gashapon-capsule.capsule-out{animation:capsule-out-of-machine 1.05s cubic-bezier(.2,.8,.35,1.2) forwards}
+@keyframes gashapon-machine-turn{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.4deg)}75%{transform:rotate(1.4deg)}}
+@keyframes gashapon-art-shake{25%{transform:translateX(-5px) rotate(-.8deg)}75%{transform:translateX(5px) rotate(.8deg)}}
+@keyframes gashapon-coin-to-slot{0%{opacity:1;transform:translate(-50%,-35px) rotate(0)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,28px) rotate(500deg) scale(.42)}}
+@keyframes capsule-out-of-machine{0%{opacity:0;transform:translate(-50%,-34px) scale(.25) rotate(-150deg)}16%{opacity:1;transform:translate(-50%,-10px) scale(.8) rotate(-60deg)}54%{opacity:1;transform:translate(calc(-50% + 14px),20px) scale(1.08) rotate(160deg)}76%{transform:translate(calc(-50% - 5px),5px) scale(1) rotate(300deg)}100%{opacity:1;transform:translate(-50%,12px) scale(1) rotate(360deg)}}
+@keyframes gashapon-twinkle{20%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}50%{opacity:.35;transform:translate(-50%,-50%) scale(.8)}}
+@media(max-height:700px){.gashapon-machine{width:min(100%,48svh,360px);height:min(48svh,360px)}}
+@media(max-width:600px){.gashapon-machine{width:min(100%,48svh,360px);height:min(48svh,360px)}.gashapon-coin{left:67%;top:59%}.gashapon-capsule{width:clamp(56px,14vw,80px)}}
+@media(prefers-reduced-motion:reduce){.gashapon-machine-art,.gashapon-twinkle{animation:none!important}.gashapon-capsule.capsule-out{animation-duration:.2s}}
