@@ -1525,10 +1525,11 @@ body[data-screen="logs"] {
 .crane-rail{display:none}
 .coin-slot{top:80%;left:71%;right:auto;width:46px;height:38px;transform:translate(-50%,-50%);opacity:0;border:0;background:transparent;color:transparent;box-shadow:none;pointer-events:none}
 .coin-slot small{display:none}
-.claw{z-index:2;top:4%;width:clamp(70px,9vw,96px);height:clamp(78px,10vw,106px);overflow:visible;transition:left .16s ease-out,top .7s ease-in}
-.claw-art{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 3px #29475b55);transition:transform .25s ease,filter .25s ease}
-.claw.descending{top:26%}
-.claw.ascending{top:4%;transition:left .16s ease-out,top .7s ease-out}
+.claw{z-index:2;top:19%;width:clamp(108px,13vw,142px);height:clamp(112px,14vw,150px);overflow:visible;transition:left .16s ease-out,top .7s ease-in}
+.claw-cable{position:absolute;z-index:-1;left:50%;top:-42px;width:7px;height:48px;transform:translateX(-50%);border-radius:5px;background:repeating-linear-gradient(90deg,#52636c 0 1px,#dce7e7 1px 3px,#72858b 3px 4px);box-shadow:0 0 3px #26394488}
+.claw-art{position:relative;display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 3px #29475b55);transition:transform .25s ease,filter .25s ease}
+.claw.descending{top:37%}
+.claw.ascending{top:19%;transition:left .16s ease-out,top .7s ease-out}
 .claw.ascending .claw-art{transform:scale(.88,.92);filter:drop-shadow(0 0 7px #ffe987) drop-shadow(0 4px 3px #29475b55)}
 .claw.ascending .carried-prize{position:absolute;left:50%;bottom:-12px;width:clamp(50px,7vw,72px);transform:translateX(-50%)}
 .crane-prizes{z-index:1;bottom:34%;height:28%;pointer-events:none}
@@ -1546,8 +1547,8 @@ body[data-screen="logs"] {
   .reward-screen .crane-start,.reward-screen .crane-controls{grid-column:2;grid-row:4;align-self:center}
   .reward-screen .crane-controls{flex-direction:column}.reward-screen .crane-controls label{width:100%}
   .reward-screen .actions{grid-row:5}.crane-prizes{height:28%;bottom:34%}
-  .claw{width:clamp(78px,8vw,96px);height:clamp(86px,9vw,106px)}
-  .reward-screen .claw.descending{top:26%}.reward-screen .claw.ascending{top:4%}
+  .claw{width:clamp(112px,12vw,142px);height:clamp(116px,13vw,150px)}
+  .reward-screen .claw.descending{top:37%}.reward-screen .claw.ascending{top:19%}
 }
-@media(max-width:899px){.claw.descending{top:26%}}
-@media(max-height:700px){.crane-machine{width:min(100%,58svh,520px)}.crane-prizes{bottom:34%;height:28%}.claw.descending{top:26%}.reward-screen .claw.descending{top:26%}}
+@media(max-width:899px){.claw.descending{top:37%}}
+@media(max-height:700px){.crane-machine{width:min(100%,58svh,520px)}.crane-prizes{bottom:34%;height:28%}.claw.descending{top:37%}.reward-screen .claw.descending{top:37%}}
