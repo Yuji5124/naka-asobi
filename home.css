@@ -119,6 +119,60 @@
   height: 82px;
   transform: rotate(-9deg);
 }
+.hero-friend.cover-rabbit {
+  z-index: 2;
+  display: grid;
+  place-items: end center;
+  filter: drop-shadow(0 8px 5px #536b4a30);
+  transform-origin: 50% 92%;
+  animation: cover-rabbit-hop 2.5s ease-in-out infinite;
+}
+.cover-rabbit img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.hero-friend.cover-rabbit::before,
+.hero-friend.cover-rabbit::after {
+  position: absolute;
+  z-index: 1;
+  color: #ffd45e;
+  pointer-events: none;
+  animation: rabbit-sparkle 1.5s ease-in-out infinite alternate;
+}
+.hero-friend.cover-rabbit::before {
+  content: "✦";
+  top: 24%;
+  left: -5%;
+  font-size: 24px;
+}
+.hero-friend.cover-rabbit::after {
+  content: "✧";
+  top: 44%;
+  right: -4%;
+  color: #f29bb7;
+  font-size: 20px;
+  animation-delay: -0.75s;
+}
+@keyframes cover-rabbit-hop {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  42% { transform: translateY(-13px) rotate(2deg); }
+  58% { transform: translateY(-7px) rotate(1deg); }
+}
+@keyframes rabbit-sparkle {
+  from { opacity: .35; transform: scale(.7) rotate(-12deg); }
+  to { opacity: 1; transform: scale(1.12) rotate(12deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-friend.cover-rabbit,
+  .hero-friend.cover-rabbit::before,
+  .hero-friend.cover-rabbit::after { animation: none; }
+}
 @media (min-width: 900px) and (orientation: landscape) {
   .home h1 {
     font-size: clamp(52px, 5.4vw, 70px);
