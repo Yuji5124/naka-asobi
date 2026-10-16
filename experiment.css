@@ -1515,3 +1515,39 @@ body[data-screen="logs"] {
 @media(max-height:700px){.gashapon-machine{width:min(100%,48svh,360px);height:min(48svh,360px)}}
 @media(max-width:600px){.gashapon-machine{width:min(100%,48svh,360px);height:min(48svh,360px)}.gashapon-coin{left:67%;top:59%}.gashapon-capsule{width:clamp(56px,14vw,80px)}}
 @media(prefers-reduced-motion:reduce){.gashapon-machine-art,.gashapon-twinkle{animation:none!important}.gashapon-capsule.capsule-out{animation-duration:.2s}}
+
+/* Immersive cabinet art with the emoji prizes and controls kept interactive. */
+.crane-machine{width:min(100%,66svh,585px);height:auto;min-height:0;max-height:none;aspect-ratio:3/2;margin:4px auto;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+.crane-machine-art{position:absolute;z-index:0;inset:0;width:100%;height:100%;display:block;object-fit:fill;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none}
+.crane-machine.reward-ready{box-shadow:none}
+.crane-machine.reward-ready .crane-machine-art{filter:drop-shadow(0 0 12px #ffdc61);animation:crane-art-ready .55s ease-in-out infinite alternate}
+.crane-machine.coin-inserting .crane-machine-art{animation:crane-cabinet-bounce .22s ease-in-out 3}
+.crane-rail{display:none}
+.coin-slot{top:80%;left:71%;right:auto;width:46px;height:38px;transform:translate(-50%,-50%);opacity:0;border:0;background:transparent;color:transparent;box-shadow:none;pointer-events:none}
+.coin-slot small{display:none}
+.claw{z-index:2;top:4%;width:clamp(70px,9vw,96px);height:clamp(78px,10vw,106px);overflow:visible;transition:left .16s ease-out,top .7s ease-in}
+.claw-art{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;filter:drop-shadow(0 4px 3px #29475b55);transition:transform .25s ease,filter .25s ease}
+.claw.descending{top:26%}
+.claw.ascending{top:4%;transition:left .16s ease-out,top .7s ease-out}
+.claw.ascending .claw-art{transform:scale(.88,.92);filter:drop-shadow(0 0 7px #ffe987) drop-shadow(0 4px 3px #29475b55)}
+.claw.ascending .carried-prize{position:absolute;left:50%;bottom:-12px;width:clamp(50px,7vw,72px);transform:translateX(-50%)}
+.crane-prizes{z-index:1;bottom:34%;height:28%;pointer-events:none}
+.machine-prize{width:clamp(52px,9vw,94px);height:clamp(54px,10vw,100px);filter:drop-shadow(0 4px 3px #37556a42);transition:transform .2s ease,opacity .25s ease}
+.machine-prize svg{width:100%;height:100%}
+.machine-prize.caught{transform:translateX(-50%) scale(.72)}
+.crane-result{z-index:4;inset:18% 10% 20%;padding:12px;border:3px solid #fff9de;border-radius:30px;background:#fff9e7e8;box-shadow:0 7px 0 #bfa87c66;backdrop-filter:blur(4px)}
+@keyframes crane-art-ready{from{filter:drop-shadow(0 0 4px #ffe87d)}to{filter:drop-shadow(0 0 17px #ffb72d) brightness(1.04)}}
+@keyframes crane-cabinet-bounce{25%{transform:translateY(-3px) rotate(-.25deg)}75%{transform:translateY(2px) rotate(.25deg)}}
+@media(min-width:900px) and (min-height:701px) and (max-height:900px){
+  .reward-screen{height:calc(100svh - 100px);display:grid;grid-template-columns:minmax(0,1fr) 230px;grid-template-rows:46px 40px 30px minmax(0,1fr) 52px;gap:6px 18px;padding:8px 24px 12px;overflow:hidden}
+  .reward-screen .stage-top,.reward-screen .screen-title,.reward-screen .screen-note,.reward-screen .actions{grid-column:1/-1;margin:0}
+  .reward-screen .stage-top{grid-row:1}.reward-screen .screen-title{grid-row:2}.reward-screen .screen-note{grid-row:3}
+  .reward-screen .crane-machine{grid-column:1;grid-row:4;width:min(100%,66svh,585px);height:min(100%,44svh,390px);min-height:0;aspect-ratio:3/2;justify-self:center;align-self:center;margin:0}
+  .reward-screen .crane-start,.reward-screen .crane-controls{grid-column:2;grid-row:4;align-self:center}
+  .reward-screen .crane-controls{flex-direction:column}.reward-screen .crane-controls label{width:100%}
+  .reward-screen .actions{grid-row:5}.crane-prizes{height:28%;bottom:34%}
+  .claw{width:clamp(78px,8vw,96px);height:clamp(86px,9vw,106px)}
+  .reward-screen .claw.descending{top:26%}.reward-screen .claw.ascending{top:4%}
+}
+@media(max-width:899px){.claw.descending{top:26%}}
+@media(max-height:700px){.crane-machine{width:min(100%,58svh,520px)}.crane-prizes{bottom:34%;height:28%}.claw.descending{top:26%}.reward-screen .claw.descending{top:26%}}
