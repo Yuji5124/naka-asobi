@@ -165,7 +165,8 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
     document.querySelector(".crane-machine").classList.add("reward-ready");
     controls.hidden = true;
     result.classList.remove("prize-won");
-    result.textContent = "コインを いれるよ！";
+    result.textContent = "";
+    document.querySelector("#reward-message").textContent = "コインを いれるよ！";
     const machine = document.querySelector(".crane-machine");
     machine.classList.add("coin-inserting");
     const coin = document.createElement("span");
@@ -183,7 +184,7 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
       coin.remove();
       machine.classList.remove("coin-inserting");
       controls.hidden = false;
-      result.textContent = "よこに うごかして とる！";
+      document.querySelector("#reward-message").textContent = "よこに うごかして とる！";
     }, 720));
   });
   document.querySelector("#crane-position").oninput = (e) => {
@@ -217,7 +218,6 @@ export function bindCrane({ data, experiment, activate, tone, refresh, celebrate
           tone(true);
           navigator.vibrate?.(35);
         } else {
-          result.textContent = "あっ、すべっちゃった！";
           tone();
         }
       }, 800),
