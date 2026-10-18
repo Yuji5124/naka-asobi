@@ -17,7 +17,7 @@ import {
   collectionView,
   bindCrane,
   bindGashapon,
-} from "./extras.js";
+} from "./extras.js?v=crane-controls-20261018";
 import { mazeCardArt, mazeView, bindMaze, MAZE_NAMES } from "./maze.js";
 import {
   shapeCardArt,
