@@ -84,7 +84,9 @@ export function bindNumbers({ level, stage, digitIndex, activate, tone, message,
       if (done || active !== null) return;
       e.preventDefault(); active=e.pointerId; canvas.setPointerCapture(active);
       previous=pos(e); points=[previous]; length=0;
-      validStart=Math.hypot(previous.x-start.x,previous.y-start.y)<72;
+      // A small hand can begin a little away from the marker. Keep the
+      // start hint, but do not make that one touch point a hard requirement.
+      validStart=Math.hypot(previous.x-start.x,previous.y-start.y)<105;
       ctx.beginPath(); ctx.moveTo(previous.x,previous.y); tone();
     };
     canvas.onpointermove = (e) => {
@@ -98,10 +100,12 @@ export function bindNumbers({ level, stage, digitIndex, activate, tone, message,
       if (done) return;
       const checkpoints=[.2,.4,.6,.8,1].map((n)=>path.getPointAtLength(path.getTotalLength()*n));
       const covered=checkpoints.filter((p)=>points.some((q)=>Math.hypot(q.x-p.x,q.y-p.y)<76)).length;
-      if(validStart && length>100 && covered>=3) {
+      // Judge the approximate path covered, so an iPad touch that begins
+      // midway through the number can still complete the activity.
+      if(length>80 && covered>=3) {
         succeed(digit);
       } else {
-        message(validStart ? "もうすこし なぞってみよう" : "ひかる まるから はじめよう"); tone(); onMistake();
+        message(validStart || covered > 0 ? "もうすこし なぞってみよう" : "うすい せんのうえを なぞってみよう"); tone(); onMistake();
       }
     });
     activate(document.querySelector("#number-retry"), () => {

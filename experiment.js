@@ -59,17 +59,30 @@ export function readExperiment(saved = {}) {
       (GAME_NAMES[id] || /^(path|maze|number|number-link|coloring|coin-thief|memory):[123]$/.test(id)) && Number.isInteger(n) && n >= 1 && n <= 3,
     ),
   );
-  d.totalCoinsEarned = Math.floor(d.totalPoints / 5);
-  d.totalCoinsSpent = Math.min(
-    d.totalCoinsEarned,
-    integer(saved.totalCoinsSpent),
+  const savedSpent = integer(saved.totalCoinsSpent);
+  d.totalCoinsEarned = Math.max(
+    Math.floor(d.totalPoints / 5),
+    integer(saved.totalCoinsEarned),
+    savedSpent + integer(saved.coinBalance),
   );
+  d.totalCoinsSpent = Math.min(d.totalCoinsEarned, savedSpent);
   d.coinBalance = d.totalCoinsEarned - d.totalCoinsSpent;
   d.collection = Array.isArray(saved.collection)
-    ? saved.collection.filter(
-        (p) =>
-          p && typeof p.id === "string" && typeof p.acquiredAt === "string",
-      )
+    ? saved.collection
+        .map((p) => {
+          // Older backups stored prizes without timestamps (and some stored
+          // just their id). Keep the treasure instead of silently dropping it.
+          if (typeof p === "string") return { id: p, acquiredAt: "" };
+          const id = typeof p?.id === "string" ? p.id : typeof p?.prizeId === "string" ? p.prizeId : "";
+          if (!id) return null;
+          return {
+            ...p,
+            id,
+            acquiredAt:
+              typeof p.acquiredAt === "string" ? p.acquiredAt : "",
+          };
+        })
+        .filter(Boolean)
     : [];
   d.sessions = Array.isArray(saved.sessions)
     ? saved.sessions
@@ -357,5 +370,5 @@ export function parentLogView(data) {
           `<li>${t.type === "earned" ? "+" : "−"}${t.amount}枚 · ${escapeText(GAME_NAMES[t.source] || t.source)}<small>${escapeText(t.timestamp)}</small></li>`,
       )
       .join("") || "<li>5ポイントで最初のコインがもらえます。</li>"
-  }</ol><button class="secondary" id="export-log">分析用データを保存（JSON）</button><p>ステージ別集計・各セッション・演出・コイン履歴を含みます。旧版で遊んだ記録は引き継ぎ、過去のプレイ回数は推定しません。</p></main>`;
+  }</ol><div class="data-backup-actions"><button class="primary" id="export-log">📤 JSONでバックアップを保存</button><label class="secondary import-backup-button" for="import-log">📥 JSONからデータを復元<input id="import-log" type="file" accept=".json,application/json" /></label></div><p id="backup-message" class="backup-message" role="status" aria-live="polite">宝物とプレイ記録を、ファイルに保存・復元できます。</p><p>保存したファイルは、更新後や別の端末でも読み込めます。</p></main>`;
 }

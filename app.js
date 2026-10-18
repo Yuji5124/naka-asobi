@@ -67,6 +67,7 @@ const words = {
   ほ: "ほし",
 };
 const KEY = "hiragana-asobi-v1";
+const BACKUP_KEY = `${KEY}-backup`;
 const blank = () => ({
   ...experimentDefaults(),
   played: [],
@@ -77,35 +78,55 @@ const blank = () => ({
   mazes: [],
   sound: true,
 });
-let data = blank(),
-  storageOK = true;
-try {
-  const saved = JSON.parse(localStorage.getItem(KEY) || "null");
-  if (saved && typeof saved === "object") {
-    data.played = letters.filter(
-      (c) => Array.isArray(saved.played) && saved.played.includes(c),
-    );
-    data.recent = Array.isArray(saved.recent)
-      ? saved.recent.filter((c) => letters.includes(c)).slice(0, 6)
-      : [];
-    data.cleared = [0, 1, 2, 3].filter(
-      (n) => Array.isArray(saved.cleared) && saved.cleared.includes(n),
-    );
-    data.stamps = Array.isArray(saved.stamps)
-      ? saved.stamps.filter((s) =>
-          ["みつけた", "なぞれた", "つながった", "かけた"].includes(s),
-        )
-      : [];
-    data.shapes = ["rotate", "build", "arrange"].filter(
-      (m) => Array.isArray(saved.shapes) && saved.shapes.includes(m),
-    );
-    data.mazes = Object.keys(MAZE_NAMES).filter(
-      (m) => Array.isArray(saved.mazes) && saved.mazes.includes(m),
-    );
-    Object.assign(data, readExperiment(saved));
-    data.sound = saved.sound !== false;
+function normalizeSavedData(input) {
+  const saved = input?.data && typeof input.data === "object" ? input.data : input;
+  if (!saved || typeof saved !== "object" || Array.isArray(saved)) return null;
+  const legacyTreasures = saved.treasures ?? saved.prizes;
+  const compatible = {
+    ...saved,
+    collection: Array.isArray(saved.collection) && saved.collection.length
+      ? saved.collection
+      : legacyTreasures ?? saved.collection,
+  };
+  const next = blank();
+  next.played = letters.filter((c) => Array.isArray(saved.played) && saved.played.includes(c));
+  next.recent = Array.isArray(saved.recent) ? saved.recent.filter((c) => letters.includes(c)).slice(0, 6) : [];
+  next.cleared = [0, 1, 2, 3].filter((n) => Array.isArray(saved.cleared) && saved.cleared.includes(n));
+  next.stamps = Array.isArray(saved.stamps) ? saved.stamps.filter((s) => ["みつけた", "なぞれた", "つながった", "かけた"].includes(s)) : [];
+  next.shapes = ["rotate", "build", "arrange"].filter((m) => Array.isArray(saved.shapes) && saved.shapes.includes(m));
+  next.mazes = Object.keys(MAZE_NAMES).filter((m) => Array.isArray(saved.mazes) && saved.mazes.includes(m));
+  Object.assign(next, readExperiment(compatible));
+  next.sound = saved.sound !== false;
+  return next;
+}
+function readStorageValue(key) {
+  try {
+    const text = localStorage.getItem(key);
+    return text ? normalizeSavedData(JSON.parse(text)) : null;
+  } catch {
+    return null;
   }
-  localStorage.setItem(KEY, JSON.stringify(data));
+}
+let data = blank(),
+  storageOK = true,
+  storageRecovered = false;
+try {
+  const primary = readStorageValue(KEY);
+  const backup = primary ? null : readStorageValue(BACKUP_KEY);
+  if (primary || backup) {
+    data = primary || backup;
+    storageRecovered = !primary && !!backup;
+    const text = JSON.stringify(data);
+    localStorage.setItem(KEY, text);
+    localStorage.setItem(BACKUP_KEY, text);
+  } else if (localStorage.getItem(KEY) || localStorage.getItem(BACKUP_KEY)) {
+    // Keep unreadable data intact until the parent imports a known good backup.
+    storageOK = false;
+  } else {
+    const text = JSON.stringify(data);
+    localStorage.setItem(KEY, text);
+    localStorage.setItem(BACKUP_KEY, text);
+  }
 } catch {
   storageOK = false;
 }
@@ -201,11 +222,69 @@ function beginLegacy(reason = "start") {
   experiment.start(cycleGame, `${cycleGame}-L${variant + 1}-S${cycleStage}`, reason, { level: cycleGame === "path" ? pathLevel : 1, stage: cycleStage });
 }
 function save() {
+  if (!storageOK) return;
   try {
-    localStorage.setItem(KEY, JSON.stringify(data));
+    const serialized = JSON.stringify(data);
+    localStorage.setItem(KEY, serialized);
+    try {
+      localStorage.setItem(BACKUP_KEY, serialized);
+    } catch {
+      // The primary save remains usable even when the browser is out of space.
+    }
   } catch {
     storageOK = false;
   }
+}
+function mergeSavedData(current, incoming) {
+  const a = normalizeSavedData(current) || blank();
+  const b = normalizeSavedData(incoming);
+  if (!b) throw new Error("JSONの中に ひなあそびの記録がありません");
+  const merged = { ...a, ...b };
+  for (const key of ["played", "cleared", "stamps", "shapes", "mazes"])
+    merged[key] = [...new Set([...(a[key] || []), ...(b[key] || [])])];
+  merged.recent = [...new Set([...(b.recent || []), ...(a.recent || [])])].slice(0, 6);
+  merged.stageProgress = { ...a.stageProgress };
+  for (const [key, value] of Object.entries(b.stageProgress || {}))
+    merged.stageProgress[key] = Math.max(merged.stageProgress[key] || 0, value);
+  merged.playLogs = { ...a.playLogs };
+  for (const [key, value] of Object.entries(b.playLogs || {})) {
+    const old = merged.playLogs[key];
+    merged.playLogs[key] = old ? {
+      ...value,
+      playCount: Math.max(old.playCount, value.playCount),
+      totalPlayTime: Math.max(old.totalPlayTime, value.totalPlayTime),
+      completedCount: Math.max(old.completedCount, value.completedCount),
+      mistakeCount: Math.max(old.mistakeCount || 0, value.mistakeCount || 0),
+      lastPlayedAt: [old.lastPlayedAt, value.lastPlayedAt].filter(Boolean).sort().at(-1) || null,
+    } : value;
+  }
+  const mergeByIdentity = (left, right, identity) => {
+    const result = [...left], counts = new Map();
+    for (const item of result) {
+      const id = identity(item);
+      counts.set(id, (counts.get(id) || 0) + 1);
+    }
+    const seen = new Map();
+    for (const item of right) {
+      const id = identity(item), count = (seen.get(id) || 0) + 1;
+      seen.set(id, count);
+      if (count > (counts.get(id) || 0)) result.push(item);
+    }
+    return result;
+  };
+  merged.collection = mergeByIdentity(a.collection, b.collection, (p) => `${p.id}|${p.acquiredAt || ""}|${p.sessionId || ""}`);
+  merged.sessions = mergeByIdentity(a.sessions, b.sessions, (s) => s.id || `${s.gameId}|${s.stageId}|${s.startedAt}`);
+  merged.coinTransactions = mergeByIdentity(a.coinTransactions, b.coinTransactions, (t) => `${t.type}|${t.amount}|${t.source}|${t.timestamp}`);
+  merged.totalPoints = Math.max(a.totalPoints, b.totalPoints);
+  merged.totalCoinsEarned = Math.max(Math.floor(merged.totalPoints / 5), a.totalCoinsEarned, b.totalCoinsEarned);
+  merged.totalCoinsSpent = Math.min(merged.totalCoinsEarned, Math.max(a.totalCoinsSpent, b.totalCoinsSpent));
+  merged.coinBalance = merged.totalCoinsEarned - merged.totalCoinsSpent;
+  merged.effects = Object.fromEntries(Object.keys(a.effects).map((key) => [key, {
+    shown: Math.max(a.effects[key]?.shown || 0, b.effects[key]?.shown || 0),
+    retries: Math.max(a.effects[key]?.retries || 0, b.effects[key]?.retries || 0),
+  }]));
+  merged.sound = b.sound;
+  return merged;
 }
 function collect(c, n) {
   if (!data.played.includes(c)) data.played.push(c);
@@ -510,6 +589,7 @@ function go(to, reason = "start") {
   if (to === "coloring") setColoringMusic(true);
   if (to === "play") beginLegacy(reason);
   if (to === "number") {
+    cycleGame = "number";
     const digit = data.numberDigitIndex % 9 + 1;
     experiment.start("number", `number-L${numberLevel}-S${cycleStage}${numberLevel === 3 ? `-N${digit}` : ""}`, reason, { level: numberLevel, stage: cycleStage });
   }
@@ -666,33 +746,64 @@ function go(to, reason = "start") {
     });
   if (to === "gashapon")
     cleanupExtra = bindGashapon({ data, experiment, activate, tone, refresh: updateHUD, celebratePrize: burst });
-  if (to === "logs")
+  if (to === "logs") {
+    const backupMessage = document.querySelector("#backup-message");
+    if (storageRecovered)
+      backupMessage.textContent = "自動バックアップから記録を復元しました。念のためJSONも保存してください。";
+    if (!storageOK)
+      backupMessage.textContent = "端末の保存データが読めません。保存済みJSONを読み込んで復元してください。";
     document.querySelector("#export-log").onclick = () => {
       experiment.checkpoint();
-      const a = document.createElement("a"),
-        url = URL.createObjectURL(
-          new Blob(
-            [
-              JSON.stringify(
-                {
-                  ...data,
-                  exportedAt: new Date().toISOString(),
-                  gameSummary: gameStats(data),
-                },
-                null,
-                2,
-              ),
-            ],
-            {
-              type: "application/json",
-            },
-          ),
-        );
-      a.href = url;
-      a.download = `hina-asobi-log-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      try {
+        const backup = {
+          format: "hina-asobi-backup",
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          data: { ...data, gameSummary: gameStats(data) },
+        };
+        const a = document.createElement("a"),
+          url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }));
+        a.href = url;
+        a.download = `hina-asobi-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        backupMessage.textContent = "JSONファイルを保存しました。ファイルアプリの「ダウンロード」を確認してください。";
+      } catch {
+        backupMessage.textContent = "保存できませんでした。端末の空き容量を確認してください。";
+      }
     };
+    document.querySelector("#import-log").onchange = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        if (file.size > 12 * 1024 * 1024) throw new Error("ファイルが大きすぎます（12MBまで）");
+        const content = typeof file.text === "function" ? await file.text() : await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error("ファイルを読み込めませんでした"));
+          reader.readAsText(file);
+        });
+        const parsed = JSON.parse(content);
+        const source = parsed?.data && typeof parsed.data === "object" ? parsed.data : parsed;
+        const knownFields = ["schemaVersion", "collection", "treasures", "prizes", "sessions", "playLogs", "totalPoints", "played", "totalCoinsEarned"];
+        if (!source || typeof source !== "object" || !knownFields.some((key) => Object.prototype.hasOwnProperty.call(source, key)))
+          throw new Error("ひなあそびの記録が見つかりません");
+        const restored = mergeSavedData(data, parsed);
+        Object.assign(data, restored);
+        storageOK = true;
+        storageRecovered = false;
+        save();
+        backupMessage.textContent = `読み込みました。宝物 ${data.collection.length}こ、遊びの記録 ${data.sessions.length}回を保護しました。`;
+        // Refresh the visible totals without losing the success message.
+        go("logs");
+        document.querySelector("#backup-message").textContent = `読み込みました。宝物 ${data.collection.length}こ、遊びの記録 ${data.sessions.length}回を保護しました。`;
+      } catch (error) {
+        backupMessage.textContent = `読み込めませんでした：${error.message || "JSONファイルを確認してください"}`;
+      } finally {
+        event.target.value = "";
+      }
+    };
+  }
   if (to === "result") {
     tone(true);
     burst();
